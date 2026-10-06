@@ -1,0 +1,262 @@
+The human gate · Procurement Audit Planner
+Skip to content
+Procurement Audit Planner
+skills · sub-agents · a human gate · agent teams
+overall
+0
+/
+27
+nothing to reset
+Setup
+Setup
+0
+/
+7
+Lesson 1
+Skills
+0
+/
+2
+Lesson 2
+Sub-agents
+0
+/
+7
+Lesson 3
+The human gate
+0
+/
+3
+○
+4.1 Open the decision template
+○
+4.2 Record your decisions
+○
+4.3 Revise the register
+Lesson 4
+Agent teams
+0
+/
+8
+Lesson 3 of 4
+The human gate
+Record the auditor's decisions and have the register revised to match.
+Nothing goes further until an auditor approves the risks. The risk-assessor has already written
+outputs/auditor-comments.md
+, a blank decision row for every risk. You fill it in, and the risk-assessor applies your decisions.
+In this guide you record decisions by telling Claude Code what they are. The file remains the record.
+By the end of this lesson
+outputs/auditor-comments.md
+holding your decisions, and a revised register that records what changed.
+Steps
+Step 4.1
+Open the decision template
+The risk-assessor wrote
+outputs/auditor-comments.md
+alongside the register in step 3.7: one row per risk with its score and scope, and blank Decision and Comment cells.
+A blank Decision means undecided, so the template alone changes nothing. Each time the register is rebuilt the template is rewritten to match it, and any decisions already recorded are kept.
+Prompt
+Paste into Claude Code
+Copy
+Show me outputs/auditor-comments.md next to the summary table of outputs/risk-register.md. Confirm there is one row for every risk in the register, and tell me how many decisions are still blank.
+What to expect
+Claude shows the two side by side: ten rows, ten blank decisions, matching the register.
+What you should see after step 4.1
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+auditor-comments.md
+1
+# Auditor comments: risk register gate
+2
+3
+Reviewer:
+4
+Date:
+5
+6
+| ID | Risk | Now | Scope now | Decision | Comment |
+7
+|---|---|---|---|---|---|
+Problems
+Terminal
+⏺ 10 rows, one for every risk in the register. All 10 decisions are still blank.
+Illustration, not a screenshot.  Your file names and counts may differ.
+Mark step 4.1 done
+Step 4.2
+Record your decisions
+These decisions are only an example. Replace them with your own after reading
+outputs/risk-register.md
+.
+Prompt
+Example: replace with your own decisions
+Copy
+Record my decisions in outputs/auditor-comments.md. Reviewer: <your name>. Date: today.
+- R-01: approve.
+- R-09: amend. Raise likelihood to 3: awards above £500,000 are rare but carry the highest stakes.
+- R-10: reject. Grants will be covered by a separate review.
+Leave every other risk blank for now.
+What to expect
+Claude fills in those rows and leaves the rest blank.
+What you should see after step 4.2
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+auditor-comments.md
+1
+| ID | Risk | Now | Scope now | Decision | Comment |
+2
+|---|---|---|---|---|---|
+3
+| R-01 | Quotes or tenders not evidenced … | 2 × 3 = 6 | in | approve |  |
+4
+| R-09 | Key Decision and delegated-authority … | 2 × 4 = 8 | in | amend | Raise likelihood to 3 … |
+5
+| R-10 | Grants treated outside the Rules … | 2 × 3 = 6 | out | reject | Separate review. |
+Problems
+Terminal
+⏺ Recorded 3 decisions. The other rows are still blank.
+Illustration, not a screenshot.  Your file names and counts may differ.
+Mark step 4.2 done
+Step 4.3
+Revise the register
+Approved risks stay as they are. Amendments are applied and flagged. Rejections move to the excluded list with your reason.
+The revision is checked, not just written.
+build_register.py
+reads your decisions and refuses to build if one was left unapplied, if a risk changed that you did not ask about, or if an approved risk has gone. The revision header and the closing decisions section come from the builder, never from the model's hand.
+Prompt
+Paste into Claude Code
+Copy
+Run the risk-assessor again. Apply the decisions in outputs/auditor-comments.md and mark the register as a revision.
+What to expect
+The register header says it is revision 1, dated from your comments, and lists R-09 (amended) and R-10 (rejected).
+R-09 keeps the score you set, flagged as an auditor override, and its justification still carries a real citation.
+R-10 sits in the excluded list with your reason, and the closing section lists all three decisions and how each was applied.
+What you should see after step 4.3
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+risk-register.md
+1
+# Procurement audit planning: risk register
+2
+3
+*Status: REVISION 1 for auditor sign-off.*
+4
+5
+*Revision 1, following auditor comments dated 2026-09-27.
+6
+Changed: R-09 (amended), R-10 (rejected).*
+7
+8
+## Auditor decisions
+9
+| ID | Decision | Applied as |
+10
+| R-01 | approve | kept as rated |
+11
+| R-09 | amend | amended |
+12
+| R-10 | reject | rejected |
+Problems
+Terminal
+⎿ risks kept: 9, excluded by validation: 0, warnings: 0, failures: 0
+⎿ written: outputs/auditor-comments.md (9 risks, 2 with a decision already recorded; revision 1, 2 changed)
+⏺ Revision 1 written. R-09 is amended and flagged as an auditor override, and R-10 is in the excluded list with your reason.
+Illustration, not a screenshot.  Your file names and counts may differ.
+Mark step 4.3 done
+What you have built so far
+6 of 11 files
+Rated risks, your decision on each one, and a revised register that records what changed. The next lesson hands the approved risks to an agent team that turns them into an audit program and checks it before you sign off.
+✓ built
+The brief
+CLAUDE.md
+✓ built
+Testable rules
+outputs/rules.json
+✓ built
+Spend indicators
+outputs/analytics.json
+✓ built
+Audit history
+outputs/history.json
+✓ built
+Risk register
+outputs/risk-register.md
+✓ built
+Auditor decisions
+outputs/auditor-comments.md
+not yet
+Planning memo
+outputs/planning-memo.md
+not yet
+Risk-control matrix
+outputs/risk-control-matrix.md
+not yet
+Audit program
+outputs/audit-program.md
+not yet
+Challenges
+outputs/challenges.md
+not yet
+QA review and sign-off
+outputs/review.md
+What you have built
+A system that turns a council's rulebook into testable rules, analyses the full spend population against them, folds in past audit history, and produces a rated risk register that an auditor approves.
+Every quote is verified against its PDF. Every figure comes from a named script. Every rating cites a rule, a metric or an audit item.
+Next, an agent team of a planner, a challenger and a QA reviewer turns the approved risks into a planning pack, argues over it, checks it, and brings it back for your sign-off.
+← Sub-agents
+Agent teams
+Built from public data published by West Berkshire Council. The system produces risk indicators to investigate, never findings of wrongdoing.
+
+FULL PROMPTS
+
+Show me outputs/auditor-comments.md next to the summary table of outputs/risk-register.md. Confirm there is one row for every risk in the register, and tell me how many decisions are still blank.
+
+---
+
+Record my decisions in outputs/auditor-comments.md. Reviewer: <your name>. Date: today.
+- R-01: approve.
+- R-09: amend. Raise likelihood to 3: awards above £500,000 are rare but carry the highest stakes.
+- R-10: reject. Grants will be covered by a separate review.
+Leave every other risk blank for now.
+
+---
+
+Run the risk-assessor again. Apply the decisions in outputs/auditor-comments.md and mark the register as a revision.

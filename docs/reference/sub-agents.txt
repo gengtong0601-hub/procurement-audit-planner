@@ -1,0 +1,1859 @@
+Sub-agents · Procurement Audit Planner
+Skip to content
+Procurement Audit Planner
+skills · sub-agents · a human gate · agent teams
+overall
+0
+/
+27
+nothing to reset
+Setup
+Setup
+0
+/
+7
+Lesson 1
+Skills
+0
+/
+2
+Lesson 2
+Sub-agents
+0
+/
+7
+○
+3.1 Build the spend-analyst
+○
+3.2 Run the spend-analyst
+○
+3.3 Build the findings-analyst
+○
+3.4 Run the findings-analyst and check it
+○
+3.5 Build the risk-assessment skill
+○
+3.6 Build the risk-assessor sub-agent
+○
+3.7 Run the risk-assessor and review the register
+Lesson 3
+The human gate
+0
+/
+3
+Lesson 4
+Agent teams
+0
+/
+8
+Lesson 2 of 4
+Sub-agents
+Build and run three sub-agents: two that analyse the data and one that turns their results into a rated risk register.
+A sub-agent is an agent with its own context window and its own tool list.
+You describe the job once in a file under
+.claude/agents/
+, hand the work over with one sentence, and it goes away, does it, and comes back with a short summary. Everything it had to read stays in its window and never enters yours.
+The problem sub-agents solve is context and waiting.
+Analysing ten thousand payments or reading four committee papers means reading a lot. Done in your own chat, that fills your context and each job queues behind the last. Handed to sub-agents, they run in their own windows, independent jobs can run at the same time, and what comes back to you is a summary rather than the data.
+This project has three.
+Two analysts each work from one source, and a third combines what they found into the risk register. The third one also shows how skills and sub-agents fit together: it loads a skill as its method.
+Three agents, three context windows, none of them yours.
+Watch it run
+The same picture, moving. This replays this project's real runs, step by step. The small bar on each box is that agent's own context filling up, and each sub-agent lists the tools it is allowed. Green wires carry a summary back to you. Use ‹ and › to step through at your own pace.
+SUB-AGENTS · LESSON 2
+3 SUB-AGENTS · 4 FILES
+IDLE
+you
+your chat
+0
+IDLE
+spend-analyst
+sub-agent · own context
+TOOLS
+Bash, Read, Write
+0
+IDLE
+findings-analyst
+sub-agent · own context
+TOOLS
+Bash, Read, Write
+0
+analytics.json
+history.json
+IDLE
+risk-assessor
+sub-agent · own context
+TOOLS
+Bash, Read, Write
+SKILL
+risk-assessment
+0
+risk-register.md
+auditor-comments.md
+▸ Run demo
+‹
+›
+idle · ready
+Idle. Press run to replay this project's real sub-agent runs.
+The agents in this project
+Three jobs handed out, each described in its own file. You build all three on this page. Three more agents come in lesson 4, but as teammates rather than sub-agents: they talk to each other, not only to you.
+What each one is for
+spend-analyst
+· Lesson 2
+Tests every payment over £500 against the thresholds in rules.json. It writes Python to clean the workbooks and run the tests, so every number comes from a script, never from the model. It looks for payments bunched just below a threshold, purchases split to stay under one, large suppliers with no published contract, and repeated payments. Output: analytics.json.
+findings-analyst
+· Lesson 2
+Reads the four committee papers in its own window and records what past audits concluded, plus the council's own method for scoring risk. It records and never judges: every item names its page and quote, and a script checks each quote. Output: history.json.
+risk-assessor
+· Lesson 2
+Waits for the other two, then reads rules.json, analytics.json and history.json and rates each risk on the council's scale. It loads the risk-assessment skill as its method, so the rating rules live in one file. A script refuses any rating that does not cite a rule, a figure or a past finding. Output: risk-register.md.
+By the end of this lesson
+outputs/analytics.json
+with named, reproducible indicators,
+outputs/history.json
+with every audit opinion and the council's scoring method, and
+outputs/risk-register.md
+with rated risks ready for your review.
+Steps
+Step 3.1
+Build the spend-analyst
+Why we're building it
+Auditors usually test a random sample of around 25 payments. Among thousands, that almost always misses the few that matter, and patterns such as split purchases only show up when every payment is looked at together.
+The spend-analyst checks every payment over £500 against the thresholds in
+rules.json
+. It looks for payments bunched just below a threshold, purchases split so each part stays under one, large suppliers with no published contract, and repeated payments.
+Its results go to
+outputs/analytics.json
+, which the risk register cites.
+The agent does its work by writing Python. It saves the scripts in
+scripts/
+and runs them with the project's
+.venv
+, so every number comes from code you can open and rerun:
+clean.py
+loads the three workbooks and tidies the payments,
+analyse.py
+runs the tests and writes
+analytics.json
+, and
+selfcheck.py
+re-works one result from each test to confirm it. A small
+common.py
+holds the helpers they share.
+It's a sub-agent because the work is long and data-heavy. Running in its own context keeps that detail out of your main conversation.
+Inside the spend-analyst: the scripts it writes and runs, in order.
+How to build it
+Every payment is tagged by kind of spend. Care placements legitimately recur, and would otherwise swamp every test.
+Every flagged payment carries a row ID, so an auditor can open the exact row in the council's workbook.
+Choose one of these two options.
+Option 1: copy the finished agent
+Use the exact agent from this guide.
+In VS Code's left-hand panel, right-click
+.claude/agents
+, choose
+New File
+, and name it
+spend-analyst.md
+.
+Copy the file below into it and save.
+File
+.claude/agents/spend-analyst.md
+Copy
+---
+name: spend-analyst
+description: Analyses the full spend population against the thresholds in outputs/rules.json and the Contracts Finder export (data/contracts.csv), writing and running Python under scripts/ to produce outputs/analytics.json and outputs/analytics-full/. Use after rules.json exists and its quotes have been spot-checked. Never does arithmetic itself.
+tools: Bash, Read, Write, Edit, Glob, Grep
+memory: project
+---
+
+You are the spend analyst for a procurement audit planning system (see
+CLAUDE.md). You turn the council's published spend and contract data into
+named, reproducible risk indicators. **Python computes every number; you
+never compute, estimate or round anything yourself.** You read aggregates
+and top-N lists only. You describe *indicators to investigate*, never
+Show the full file (325 lines). Copy always copies all of it.
+Option 2: ask Claude Code to write the agent
+Claude first studies the data, then writes an agent that handles what it found. This is how the agent in this guide was made.
+The first prompt looks only at summaries and changes no files.
+Prompt
+First, study the data
+Copy
+Before writing the spend-analyst, study its inputs using aggregates only:
+- the spend workbooks: header row per file, date type, how many rows have a redacted supplier, the Narrative and Expenditure category values;
+- contracts.csv: rows for the council, date range, how the supplier field is packed, and how many notices are still live during the spend months.
+
+Then dry-run a supplier-name match between spend suppliers above £25,000 annualised and the council's notices, and tell me what share matches. Don't write the agent yet.
+Prompt
+Then write the agent
+Copy
+Build the spend-analyst sub-agent described in CLAUDE.md, using what you just found in the data. Design:
+- contracts.csv is optional. Without it, the notice-based tests are skipped and recorded, and nothing else stops.
+- Cleaning finds the header row in each workbook, asserts the six expected columns, and gives every row a row_id (file and sheet row) so any flagged payment can be found in the source.
+- Exclude and log redacted suppliers, pension and statutory payments, and payments to other public bodies. Don't exclude grants: the rules treat a grant as a contract.
+- Tag every row as care or education placement, grant, agency staff, premises, or general procurement, and report results per tag.
+- Thresholds come only from rules.json. Skip any tier whose parameter is null and record why.
+- Tests: the ones listed in CLAUDE.md, plus high_value_suppliers, which always runs and lists suppliers above the quote threshold as the population to request contract evidence for.
+- Name matches that aren't exact are candidates for the auditor, never counted as matches.
+- Write outputs/analytics.json (parameters, counts, £ totals, top 20 per test), full lists in outputs/analytics-full/, and a self-check script that re-derives one flagged item per test.
+- Inspect data only with .head(), .info() and aggregates. Use indicator language only.
+
+Don't run the agent yet.
+What to expect
+Either way,
+.claude/agents/spend-analyst.md
+exists.
+With option 2, the first prompt reports a match rate between spend suppliers and published contract notices. In our run it was small, because Contracts Finder only holds recent notices. That is why the agent treats a missing notice as something to check, never as evidence.
+With option 2, Claude also summarises the agent's design and any gaps between the data and the brief.
+What you should see after step 3.1
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+⌄
+agents
+spend-analyst.md
+new
+›
+skills
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+spend-analyst.md
+1
+---
+2
+name: spend-analyst
+3
+description: Analyses the full spend population against the thresholds in outputs/rules.json and the Contracts Finder export (data/contracts.csv), writing and running Python under scripts/ to produce outputs/analytics.json and outputs/analytics-full/. Use after rules.json exists and its quotes have been spot-checked. Never does arithmetic itself.
+4
+tools: Bash, Read, Write, Edit, Glob, Grep
+5
+memory: project
+6
+---
+7
+8
+You are the spend analyst for a procurement audit planning system (see
+Problems
+Terminal
+⏺ The spend-analyst is ready. Ask me to run it when you want.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.1 done
+Step 3.2
+Run the spend-analyst
+The agent writes its scripts, runs them, checks itself, and reports headline figures read from
+analytics.json
+, never recomputed.
+Prompt
+Paste into Claude Code
+Copy
+Run the spend-analyst.
+What to expect
+Population and exclusion counts, a headline per test, the tiers skipped because a threshold is still empty, and the row IDs used in the self-check.
+Claude Code · replay
+▶ Replay
+>
+Run the spend-analyst.
+Launching the spend-analyst sub-agent in the background.
+●
+spend-analyst(Run spend analysis)
+Write(scripts/clean.py) · Write(scripts/analyse.py) · Write(scripts/selfcheck.py)
+Bash(.venv/bin/python scripts/clean.py && .venv/bin/python scripts/analyse.py)
+population: 10,607 rows → 8,534 after exclusions · 3 months · annualised ×4
+thresholds from rules.json: £1,000 · £25,000 · £500,000 · £2.5m
+skipped: statutory tiers (threshold parameters are null)
+selfcheck: every test's sample item re-derived and matched
+Headline figures are in outputs/analytics.json. Every flagged payment has a row_id you can open in the workbook.
+Shortened from one real run. Your counts will differ with different months of data.
+What analytics.json holds, and how to use it
+analytics.json
+is the spend-analyst's report card on every payment. It holds one block per test: what the test looked for, the settings it used, how many payments it flagged, their total value, and the 20 biggest examples. It is a summary, so it stays small; the complete list for each test is a spreadsheet in
+outputs/analytics-full/
+.
+1. What's inside
+Test
+What it looks for
+Found in this run
+threshold_clustering
+Payments just under a limit that would require more quotes, within 10% of it
+10 payments just below £25,000
+split_purchases
+Several payments to one supplier within 30 days that together pass a limit, while each stays under it
+65 cases across 43 suppliers
+duplicates
+The same supplier paid the same amount twice within 7 days
+35 groups
+high_value_suppliers
+Suppliers whose yearly spend passes the £25,000 quote limit
+228 suppliers
+off_contract
+Of those, suppliers with no published contract notice
+186 suppliers to check
+expired_notice_spend
+Suppliers still being paid after their only published contract ended
+7 suppliers
+spend_vs_award
+Suppliers paid 1.25 times or more their contract's yearly value
+13 of 24 checked
+Seven tests, one block each. Figures are from the May to July 2026 spend. Where a test splits results by kind of spend, the figure shown is for general procurement; care placements, which recur by design, are counted separately.
+2. How an auditor uses it: one example, start to finish
+1
+Pick a pattern worth testing
+The summary shows 65 possible split purchases. That is a lead worth following, and far more targeted than 25 random payments.
+2
+Open the full list
+outputs/analytics-full/split-purchases-windows.csv
+lists every case, biggest first: the supplier, the 30-day window, how many payments, and their total.
+3
+Find the actual payments
+Each case lists the row ID of every payment in it, such as
+Over500_2026_P02_-_published.xlsx:695
+: the council's workbook and the row to open. Nothing has to be taken on trust.
+4
+Test the control
+Ask the council for the orders and quotes behind those payments, and check whether the purchase should have been bought as one contract under the rules.
+The same figures feed the risk register in step 3.7, where each rating cites the test it rests on, such as the 65 split-purchase cases.
+These are indicators to investigate, not findings. A flagged payment can have a perfectly good explanation; the point is to know where to look.
+What you should see after step 3.2
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+⌄
+outputs
+›
+analytics-full
+new
+analytics.json
+new
+rules.json
+⌄
+scripts
+analyse.py
+new
+clean.py
+new
+common.py
+new
+selfcheck.py
+new
+CLAUDE.md
+requirements.txt
+analytics.json
+1
+{
+2
+"population": {
+3
+"rows_raw": 10607,
+4
+"rows_after_exclusions": 8534,
+5
+"months_covered": 3,
+6
+"annualisation_factor": 4.0,
+7
+},
+Problems
+Terminal
+⏺ spend-analyst(Run spend analysis)
+⎿ selfcheck: every test's sample item re-derived and matched
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.2 done
+Step 3.3
+Build the findings-analyst
+Why we're building it
+A good audit plan builds on what past audits found and on how the council itself rates risk. That information sits in committee papers that take hours to read.
+The findings-analyst reads the four committee papers and records recent audit opinions, follow-ups, risk themes, and the council's method for scoring likelihood and impact.
+Its output,
+outputs/history.json
+, gives the risk register two things: past findings to cite, and the council's own scale to rate risks on.
+It records and never judges. Anything the papers don't contain is listed as a gap, and every item points to its page and quote.
+Inside the findings-analyst: extract, record, verify.
+How to build it
+Some tables come out garbled as plain text, so they're rebuilt from a layout-preserving extraction, and only text that verifies is quoted.
+Choose one of these two options.
+Option 1: ask Claude Code to write the agent
+Claude reads the committee papers first and builds the agent to fit them. This is how the agent in this guide was made.
+Prompt
+Paste into Claude Code
+Copy
+Before building the findings-analyst, extract the text of every PDF in data/committee (plain and with -layout) and find where the audit opinions, any agreed actions, and the risk scoring method (scales, matrix, bands, appetite) actually are.
+
+Then build the findings-analyst from CLAUDE.md:
+- It records, never scores. Anything not in the papers is omitted and listed in gaps.
+- Every item has its source file, pdf_page and a copy-exact quote.
+- Tables that garble in plain text are rebuilt from the layout text.
+- Inconsistencies inside the papers are recorded as discrepancies, not resolved.
+- Write scripts/verify_history.py, which checks that every quote is on its stated page, and test it on a fixture with planted errors.
+
+Don't run the agent yet.
+Option 2: copy the finished agent
+Use the exact agent from this guide. It has two files, and the agent needs both: it runs
+scripts/verify_history.py
+to check every quote.
+In VS Code's left-hand panel, right-click
+.claude/agents
+, choose
+New File
+, and name it
+findings-analyst.md
+. Copy the first file below into it and save.
+Right-click
+scripts
+, choose
+New File
+, and name it
+verify_history.py
+. Copy the second file below into it and save.
+File
+.claude/agents/findings-analyst.md
+Copy
+---
+name: findings-analyst
+description: Reads the Governance Committee papers in data/committee/*.pdf and writes outputs/history.json: recent audit coverage and opinions, follow-ups, agreed actions, risk themes and the council's risk scoring method: with every item sourced to a document and page and every quote verified. Use after the committee PDFs are in place. Reads and sources only; never scores risks.
+tools: Bash, Read, Write, Glob, Grep
+memory: project
+---
+
+You are the findings analyst for a procurement audit planning system (see
+CLAUDE.md). You read the council's own committee papers and record what
+they say about past audit coverage, outstanding actions, risk themes and
+the risk scoring method, so that the risk-assessment step can cite them.
+**You record; you do not judge.** Nothing goes into history.json that is
+Show the full file (224 lines). Copy always copies all of it.
+File
+scripts/verify_history.py
+Copy
+#!/usr/bin/env python3
+"""Verify outputs/history.json against the committee PDFs.
+
+Usage: verify_history.py HISTORY_JSON COMMITTEE_DIR
+
+Checks: JSON shape; every item (anywhere in the tree) that has a `source`
+also has an integer `pdf_page`; the source file exists; every `quote` is
+found on the stated page after normalisation (whitespace collapsed, bullet
+glyphs and page footers ignored, quote/dash glyphs unified).
+Exit 0 with ALL CHECKS PASSED when clean.  Needs `pdftotext` on PATH.
+"""
+import json, re, shutil, subprocess, sys
+Show the full file (118 lines). Copy always copies all of it.
+What to expect
+Either way,
+.claude/agents/findings-analyst.md
+and
+scripts/verify_history.py
+exist.
+With option 1, Claude also shows the verifier catching planted errors, and notes what the papers contain and lack.
+What you should see after step 3.3
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+⌄
+agents
+findings-analyst.md
+new
+spend-analyst.md
+›
+skills
+›
+.venv
+›
+data
+›
+outputs
+⌄
+scripts
+analyse.py
+clean.py
+common.py
+selfcheck.py
+verify_history.py
+new
+CLAUDE.md
+requirements.txt
+findings-analyst.md
+1
+---
+2
+name: findings-analyst
+3
+description: Reads the Governance Committee papers in data/committee/*.pdf and writes outputs/history.json: recent audit coverage and opinions, follow-ups, agreed actions, risk themes and the council's risk scoring method: with every item sourced to a document and page and every quote verified. Use after the committee PDFs are in place. Reads and sources only; never scores risks.
+4
+tools: Bash, Read, Write, Glob, Grep
+5
+memory: project
+6
+---
+7
+8
+You are the findings analyst for a procurement audit planning system (see
+Problems
+Terminal
+⎿ fixture with planted errors: 3 failure(s)
+⏺ The findings-analyst is ready.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.3 done
+Step 3.4
+Run the findings-analyst and check it
+Rendering pages as images checks the PDF itself, which matters most for tables such as the impact scale.
+Prompt
+Paste into Claude Code
+Copy
+Run the findings-analyst.
+Prompt
+Then ask
+Copy
+Check three items from outputs/history.json against the PDFs by rendering their pages as images: one audit opinion, one entry of the impact scale, and one risk band.
+What to expect
+The verifier reports every quote found, and the three items match their pages.
+Recorded gaps, such as agreed actions that no paper lists, and discrepancies inside the strategy.
+Claude Code · replay
+▶ Replay
+>
+Run the findings-analyst.
+●
+findings-analyst(Run findings analysis)
+Bash(pdftotext … data/committee/*.pdf)
+audits: 20 · agreed actions: none listed in any paper · planned audits: appendix not in the file
+scoring method usable: likelihood 1–5 × impact 1–5 · 5×5 matrix · RAG bands
+discrepancies recorded: 10
+ALL CHECKS PASSED (104 sourced items, 104 quotes, 4 documents)
+Shortened from one real run. Your counts will differ with different months of data.
+What history.json holds, and how to use it
+history.json
+is the findings-analyst's record of what the council's own papers say. It never judges; it writes down, with the paper, page and exact quote for every item, so anything in it can be checked in seconds.
+1. What's inside
+Section
+What it holds
+In this run
+audits
+Each recent internal audit, its opinion, and whether it touches procurement
+20 audits, 4 directly about buying
+scoring_method
+How the council rates risk: likelihood 1–5, impact 1–5, and the bands
+Extreme 15–25 down to Low up to 3
+risk_themes
+Risks the papers name that touch contracts, suppliers or payments
+14 themes
+gaps
+What the papers don't say, listed instead of guessed
+5 gaps
+discrepancies
+Places where the papers contradict themselves, recorded not resolved
+10 discrepancies
+Every item carries its source paper, page and quote, and
+verify_history.py
+has checked all 104 quotes.
+2. How an auditor uses it: one example, start to finish
+1
+See what has been audited, and how it went
+Four recent audits touch buying directly. One stands out: Personal Budgets (Direct Payments) received
+Limited Assurance
+in the December 2025 report.
+2
+Check it at the source
+Its entry says where it came from:
+audit-completed-work-2025-26-q3.pdf
+, page 1, with the exact words quoted. Nothing needs to be taken on trust.
+3
+Let it shape the risk rating
+An earlier weak opinion on the same theme makes a problem more likely to recur. The risk register applies this: the care-placements risk has its likelihood raised by one point, and names this audit as the reason.
+4
+Rate on the council's own scale
+Because the scoring method is recorded, every risk is scored the way the council scores its own, from Low up to Extreme.
+The 5 gaps matter too. No paper lists open agreed actions, so their status has to be asked for in fieldwork rather than assumed.
+An audit opinion is context, not proof: a limited opinion raises a question, it doesn't answer it.
+What you should see after step 3.4
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+⌄
+outputs
+›
+analytics-full
+analytics.json
+history.json
+new
+rules.json
+›
+scripts
+CLAUDE.md
+requirements.txt
+history.json
+1
+"scoring_method": {
+2
+"usable": true,
+3
+"likelihood_scale": [
+4
+{ "score": 5, "label": "Certain", "probability": "100%" },
+5
+{ "score": 4, "label": "Almost Certain", "probability": "70% - 99%" },
+Problems
+Terminal
+⎿ ALL CHECKS PASSED (104 sourced items, 104 quotes, 4 documents)
+⏺ All three items match their pages.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.4 done
+Step 3.5
+Build the risk-assessment skill
+Why we're building it
+The two analysts produce facts: what the payments show, and what past audits and the council's strategy say. Turning facts into rated risks is a judgment, and judgments drift when there's no fixed method.
+This skill is that method. It says how to rate each risk's likelihood and impact on the council's own scale, and it requires every rating to cite its evidence: a rule from
+rules.json
+, a figure from
+analytics.json
+, or an item from
+history.json
+.
+It comes with a Python script,
+build_register.py
+. The script checks every citation, fills in every figure, works out every score and writes the register. A rating it can't trace to evidence is left out.
+The risk-assessor you build next follows this skill, so the rating rules live in one place.
+How to build it
+Claude first looks at
+analytics.json
+and
+history.json
+, so every citation the skill allows points at a figure or item that really exists.
+Prompt
+Paste into Claude Code
+Copy
+Build the risk-assessment skill described in CLAUDE.md. First look at the real structure of outputs/analytics.json and outputs/history.json, so citations can point at paths and IDs that exist. Design:
+- The agent writes its judgments to outputs/risk-ratings.json. Justifications cite sources with tags like [rule:ID], [metric:$.path.in.analytics] and [history:ID], and every figure is a {{$.path}} placeholder, never a typed number.
+- build_register.py, next to SKILL.md, resolves every citation, fills every placeholder from analytics.json, computes the score, matrix label and band from the council's matrix in history.json, and drops any risk whose likelihood or impact justification has no resolvable citation.
+- It also checks that a repeat-finding uplift cites an audit with an adverse opinion, warns when a figure is typed in prose, and renders outputs/risk-register.md ending with an "Auditor decisions" section.
+- It also writes outputs/auditor-comments.md, the auditor's decision template: one row per rated risk with blank Decision and Comment cells. Decisions already in that file are kept when it is rewritten.
+- On a re-run after the gate, it reads those decisions and the agent's "revision" block in risk-ratings.json, writes a revision header naming what changed, marks any auditor override, and fails if a decision was left unapplied or something changed that the auditor did not ask for.
+- Include a likelihood rubric so two runs rate the same evidence the same way.
+- Where the scoring method contains conflicting thresholds, use one, mark the other, and say so in the register header. Never resolve it silently.
+
+Test the builder on a fixture with one good risk and one broken risk.
+What to expect
+The builder keeps the good risk and excludes the broken one, listing each reason it failed.
+What you should see after step 3.5
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+›
+agents
+⌄
+skills
+›
+extract-rules
+⌄
+risk-assessment
+build_register.py
+new
+SKILL.md
+new
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+SKILL.md
+1
+---
+2
+name: risk-assessment
+3
+description: Merge outputs/rules.json, outputs/analytics.json and outputs/history.json into outputs/risk-register.md: risks rated likelihood × impact on the council's own scale, every rating cited to a rule, a named metric or a history item, rendered and validated by build_register.py. Loaded by the main agent at Phase 1 step 4.
+4
+---
+5
+6
+# risk-assessment
+7
+8
+Produce the risk register a human auditor will approve or reject. You
+Problems
+Terminal
+⎿ risks kept: 1, excluded by validation: 1
+⏺ The builder kept the good risk and excluded the broken one, with each reason listed.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.5 done
+Step 3.6
+Build the risk-assessor sub-agent
+Why we're building it
+This agent produces the risk register. It reads
+rules.json
+,
+analytics.json
+and
+history.json
+, rates each risk by following the skill from step 3.5, and runs the builder until the register passes every check. The builder also writes
+auditor-comments.md
+, a blank decision row for every risk, ready for the next lesson.
+It runs as a sub-agent so it sees only those three files, not this whole conversation. Its ratings rest on the evidence alone, and two runs can be compared fairly.
+It recommends which risks to audit. You decide, in the next lesson.
+Inside the risk-assessor: load the method, judge, then build and check.
+How to build it
+Choose one of these two options.
+Option 1: ask Claude Code to write the agent
+Claude writes the agent around the risk-assessment skill you just built. This is how the agent in this guide was made.
+Prompt
+Paste into Claude Code
+Copy
+Create a sub-agent called risk-assessor that builds the risk register by following the risk-assessment skill. It reads rules.json, analytics.json and history.json, writes outputs/risk-ratings.json, runs the builder until there are no failures and no warnings (the builder also writes the outputs/auditor-comments.md decision template), and reports. It never edits its inputs, the skill or the builder, and it never approves scope: it recommends and the auditor decides.
+
+Update the flow diagram and the repo tree in CLAUDE.md so that step (3) names this sub-agent.
+Option 2: copy the finished agent
+Use the exact agent from this guide. It follows the risk-assessment skill from step 3.5, so do that step first.
+In VS Code's left-hand panel, right-click
+.claude/agents
+, choose
+New File
+, and name it
+risk-assessor.md
+.
+Copy the file below into it and save.
+File
+.claude/agents/risk-assessor.md
+Copy
+---
+name: risk-assessor
+description: Merges outputs/rules.json, outputs/analytics.json and outputs/history.json into outputs/risk-register.md by following the risk-assessment skill: it writes outputs/risk-ratings.json with cited judgments, runs build_register.py until clean (which also writes the outputs/auditor-comments.md decision template), and reports for the auditor's approval gate. Re-run with outputs/auditor-comments.md to revise after a rejection. Use after steps 1–3 are verified.
+tools: Bash, Read, Write, Edit, Glob, Grep
+memory: project
+---
+
+You are the risk assessor for a procurement audit planning system (see
+CLAUDE.md). You perform the merge step: you combine what the rules
+require, what the spend data indicates and what audit history shows into
+a rated risk register that a human auditor will approve, amend or reject.
+Show the full file (134 lines). Copy always copies all of it.
+What to expect
+Either way,
+.claude/agents/risk-assessor.md
+exists.
+With option 1, Claude also checks that the flow diagram and repo tree in
+CLAUDE.md
+name the risk-assessor, and updates them if not.
+What you should see after step 3.6
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+⌄
+agents
+findings-analyst.md
+risk-assessor.md
+new
+spend-analyst.md
+›
+skills
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+risk-assessor.md
+1
+---
+2
+name: risk-assessor
+3
+description: Merges outputs/rules.json, outputs/analytics.json and outputs/history.json into outputs/risk-register.md by following the risk-assessment skill: it writes outputs/risk-ratings.json with cited judgments, runs build_register.py until clean (which also writes the outputs/auditor-comments.md decision template), and reports for the auditor's approval gate. Re-run with outputs/auditor-comments.md to revise after a rejection. Use after steps 1–3 are verified.
+4
+tools: Bash, Read, Write, Edit, Glob, Grep
+5
+memory: project
+6
+---
+7
+8
+You are the risk assessor for a procurement audit planning system (see
+Problems
+Terminal
+⏺ Added the risk-assessor, and CLAUDE.md now names it in step (3).
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.6 done
+Step 3.7
+Run the risk-assessor and review the register
+Rerunning the builder yourself confirms the register validates, and the name check confirms the indicator-language rule held.
+Prompt
+Paste into Claude Code
+Copy
+Run the risk-assessor.
+Prompt
+Then ask
+Copy
+Rerun the builder yourself, show me the register's summary table, and check that no supplier name appears in any risk statement or justification.
+What to expect
+A summary table of risks with likelihood, impact, score, band and a scope recommendation.
+Zero failures from the builder and no supplier names in the risk text.
+Claude Code · replay
+▶ Replay
+>
+Run the risk-assessor.
+●
+risk-assessor(Build risk register)
+Read(.claude/skills/risk-assessment/SKILL.md)
+Write(outputs/risk-ratings.json)
+Bash(.venv/bin/python .claude/skills/risk-assessment/build_register.py outputs/risk-ratings.json)
+risks kept: 10, excluded by validation: 0, warnings: 0, failures: 0
+written: outputs/auditor-comments.md (10 risks, 0 with a decision already recorded)
+Seven risks fall in the Medium-High band, three are Moderate and none is Extreme. Please record a decision for each one in outputs/auditor-comments.md.
+Shortened from one real run. Your counts will differ with different months of data.
+What risk-register.md holds, and how to use it
+risk-register.md
+is the document the auditor actually reads. It turns the three JSON files into a short, ranked list of risks, and every score in it can be traced back to a rule, a figure or a past audit.
+1. What's inside
+Section
+What it holds
+In this run
+Scoring scale
+The council's own likelihood and impact definitions and bands
+Taken from its risk strategy
+Summary
+Every risk ranked by score, with its band and whether it is recommended for the audit
+10 risks: 7 Medium–High, 3 Moderate
+Risks
+One entry per risk: why it is likely, how bad it would be, the evidence, and what to test
+10 entries
+Excluded
+Risks considered but not rated, each with the reason
+6 excluded
+Auditor decisions
+A closing section that points to auditor-comments.md; after a revision it lists each decision and how it was applied
+None recorded yet
+Every figure in the register was filled in by
+build_register.py
+from
+analytics.json
+; the model typed none of them.
+2. How an auditor uses it: one example, start to finish
+1
+Start at the top of the summary
+The highest-scoring risks come first. One is
+R-02
+: requirements split so each payment stays below the three-quote limit, likelihood 3 × impact 4 =
+12
+, Medium–High.
+2
+Check why it scored that
+Its entry cites the rule against splitting purchases (CPR-13), quoted word for word, and the 65 cases the spend-analyst flagged. If you disagree with the reasoning, you can see exactly which piece of evidence you disagree with.
+3
+Decide
+Record approve, amend or reject for R-02 in
+auditor-comments.md
+, which the risk-assessor has already written with a blank row for every risk. That is the next lesson.
+4
+Plan the testing
+Its "proposed focus" says what to test, and its sample source points at
+split-purchases-windows.csv
+, the list to pick the cases from.
+Once approved, these risks are what the agent team in lesson 4 turns into specific tests and sample requests: a control per risk, a test of it, and the exact payments to pull.
+The register recommends; the auditor decides. Every risk is an indicator to investigate, not a finding.
+What you should see after step 3.7
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+⌄
+outputs
+›
+analytics-full
+analytics.json
+auditor-comments.md
+new
+history.json
+risk-ratings.json
+new
+risk-register.md
+new
+rules.json
+›
+scripts
+CLAUDE.md
+requirements.txt
+risk-register.md
+1
+# Procurement audit planning: risk register
+2
+3
+*Status: DRAFT for auditor review (Phase 2 gate).*
+4
+5
+**Indicators, not findings.** Every risk describes a pattern in public data
+6
+or a control to test.
+7
+8
+## Summary
+Problems
+Terminal
+⎿ risks kept: 10, excluded by validation: 0, warnings: 0, failures: 0
+⎿ written: outputs/auditor-comments.md (10 risks, 0 with a decision already recorded)
+⏺ No supplier names appear in any risk statement or justification.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 3.7 done
+What you have built so far
+5 of 11 files
+Three sub-agents have done the analysis. Every payment has been tested against the rules, past audit opinions and the council's own risk scale are on record, and the two have been merged into a rated risk register. What is missing is the decision only an auditor can make.
+✓ built
+The brief
+CLAUDE.md
+✓ built
+Testable rules
+outputs/rules.json
+✓ built
+Spend indicators
+outputs/analytics.json
+✓ built
+Audit history
+outputs/history.json
+✓ built
+Risk register
+outputs/risk-register.md
+not yet
+Auditor decisions
+outputs/auditor-comments.md
+not yet
+Planning memo
+outputs/planning-memo.md
+not yet
+Risk-control matrix
+outputs/risk-control-matrix.md
+not yet
+Audit program
+outputs/audit-program.md
+not yet
+Challenges
+outputs/challenges.md
+not yet
+QA review and sign-off
+outputs/review.md
+← Skills
+The human gate
+Built from public data published by West Berkshire Council. The system produces risk indicators to investigate, never findings of wrongdoing.
+
+FULL PROMPTS
+
+---
+name: spend-analyst
+description: Analyses the full spend population against the thresholds in outputs/rules.json and the Contracts Finder export (data/contracts.csv), writing and running Python under scripts/ to produce outputs/analytics.json and outputs/analytics-full/. Use after rules.json exists and its quotes have been spot-checked. Never does arithmetic itself.
+tools: Bash, Read, Write, Edit, Glob, Grep
+memory: project
+---
+
+You are the spend analyst for a procurement audit planning system (see
+CLAUDE.md). You turn the council's published spend and contract data into
+named, reproducible risk indicators. **Python computes every number; you
+never compute, estimate or round anything yourself.** You read aggregates
+and top-N lists only. You describe *indicators to investigate*, never
+wrongdoing by the council, a department or a supplier.
+
+## Inputs
+
+| Input | Path | Notes |
+| --- | --- | --- |
+| Rules | `outputs/rules.json` | thresholds, inclusivity, parameters; from `/extract-rules` |
+| Spend | `data/spend/*.xlsx` (or `*.csv`) | one workbook per period, sheet `Data to publish`, header row position varies |
+| Contracts (optional) | `data/contracts.csv` | Raw Contracts Finder export of awarded notices; may include other buyers. If absent, the notice-based tests are skipped and recorded |
+| Register (optional) | `data/contract-register.csv` | the council's own published contract register, if the auditor adds it |
+| Python | `.venv/bin/python` | pandas + openpyxl (`requirements.txt`) |
+
+Data is read-only. Never edit anything under `data/`.
+
+## What the data is, and is not
+
+Understand these before writing code; they drive the design.
+
+- **Spend `Date` is a payment-run timestamp**, not an invoice date. Many
+  rows share one timestamp to the millisecond. Use calendar dates for all
+  window logic and keep the timestamp only for traceability.
+- **The population is "expenditure over £500"**. Payments of £500 or less
+  are invisible, so split-purchase and duplicate results are lower bounds.
+- **Supplier `Redacted`** is many payees (typically individuals) under one
+  label. Around a fifth of rows. Never use them in any supplier-level test.
+- **contracts.csv holds published *notices*, not a contract register.** It holds
+  awards published on Contracts Finder in roughly the last five years. A
+  contract awarded earlier (e.g. long-running waste or highways contracts),
+  one advertised only on Find a Tender, a framework call-off recorded under
+  another buyer, or an exempt placement will have no notice here. **"No
+  notice found" is therefore an indicator to check against the council's
+  contract register, never evidence of off-contract spend.** Say so in every
+  output that reports it.
+- **Notice `Supplier` field** is one or more bracketed groups:
+  `[Name|Address|Ref type|Ref Number|Is SME|Is VCSE][Name|...]`. Framework
+  and DPS awards list up to ~20 suppliers in one notice. Every listed
+  supplier counts as covered by that notice.
+- **Notice dates** are D/M/Y (`30/09/2028`); spend dates, if text, are
+  M/D/Y. Parse both with explicit formats, never auto-detect. `Awarded
+  Value` is the whole-term value and `0.00` is common on framework and
+  multi-lot notices; it does not mean "no contract". `OJEU Procedure Type`
+  distinguishes framework call-offs from open competitions.
+- The Rules (rules.json) matter to interpretation: Appendix C row F exempts
+  individually chosen care and education placements from competition;
+  row D requires S151 approval for extensions; row E for variations; clause
+  1.6.2 treats a grant as a contract. Cite these by `rule_id` in the JSON.
+
+## Non-negotiable rules
+
+1. **No arithmetic by you.** Every figure you report is read from a script's
+   output. If a number is not in a file, it does not exist.
+2. **Context discipline.** Inspect data with `.head()`, `.info()`,
+   `.describe()`, `value_counts().head(20)` and aggregates only. Never print
+   a full dataframe or flagged list to the terminal. Full lists go to
+   `analytics-full/`.
+3. **Thresholds come from rules.json.** Build the threshold list from rules
+   of type `threshold`, `approver` and `anti-avoidance`: every distinct
+   numeric `threshold_low` / `threshold_high`, its inclusivity, the
+   `rule_id`s that cite it, and whether the rule's `required_action` involves
+   quotes or tenders (a "competition-triggering" threshold). Never type a
+   threshold figure into a script. Where a test needs a `parameters` entry
+   whose `value` is `null`, skip that tier and record it under `skipped`.
+4. **Stop and report** if a spend file lacks the expected columns, a date or
+   amount fails to parse, or rules.json is missing. If contracts.csv is
+   present but fewer than 20 notices remain after filtering to the council,
+   treat it as absent and say why. Do not guess, patch or fabricate.
+   **Absence of contracts.csv is not an error**: run the spend-only tests
+   and record the notice-based ones under `skipped`.
+5. **Indicator language.** Names and descriptions state the pattern, e.g.
+   "payments within 10% below £25,000", not what it implies.
+6. **Every flagged row carries `row_id`** (`<file>:<sheet row>`) so the
+   auditor can open the workbook and find it.
+
+## Step 1: Load rules and confirm inputs
+
+Read `outputs/rules.json`. List the thresholds you derived, with rule IDs
+and inclusivity, and the null parameters. Confirm which input files exist.
+Set `contracts_present` and `register_present` (both optional inputs) and
+state which tests will run in full, in degraded form, or be skipped. Report
+this before writing code.
+
+## Step 2: `scripts/clean.py`
+
+Writes `outputs/analytics-full/spend-clean.csv`, `spend-excluded.csv`,
+`notices-clean.csv` and `cleaning-log.json`.
+
+**Spend loading.** For each file: read with `header=None`, find the row
+whose first cell is `Service`, re-read with that header. Assert the columns
+are exactly `Service, Expenditure category, Narrative, Date, Net amount,
+Supplier name`. Add `source_file`, `row_id`, `pay_date` (calendar date).
+Parse text dates with `dayfirst=False`. Assert no null date, amount or
+supplier, and no negative amounts (log if any exist and stop). Record
+`months_covered` as the number of distinct calendar months in `pay_date`.
+
+**Supplier normalisation** (`normalise_supplier`, shared by both sides):
+uppercase; `&` → `AND`; remove bracketed qualifiers such as `(CHAPS ONLY)`;
+remove `T/A ...` and `TRADING AS ...` suffixes; keep only `A-Z 0-9` and
+spaces; drop tokens in `{LTD, LIMITED, PLC, LLP, LLC, INC, CIC, CIO, UK,
+THE}`; collapse whitespace. Keep the original name alongside.
+
+**Exclusions** (each category: rows, £, one-line reason; rows kept in
+`spend-excluded.csv`):
+
+- `redacted_supplier`: supplier is `Redacted` (case-insensitive).
+- `pension_statutory`: narrative matches `LGPS|PENSION|SUPERANNUATION`.
+- `inter_authority`: supplier matches `\b(COUNCIL|BOROUGH|COUNTY|CNCL|NHS|
+  POLICE|FIRE AUTHORITY|FIRE AND RESCUE|HMRC|HM REVENUE|DEPARTMENT FOR|
+  MINISTRY OF)\b` or narrative matches `JOINT ARRANGEMENTS`, and narrative
+  is not `Private Contractors`.
+- Any further category must be named, justified and reversible.
+
+Do **not** exclude grants or `Transfer Payment` rows (clause 1.6.2). Tag
+them instead.
+
+**Tagging** (columns on `spend-clean.csv`, derived from `Narrative`,
+`Service` and `Expenditure category` by fixed regexes; log the regexes):
+
+| tag | rule |
+| --- | --- |
+| `care_or_education_placement` | Service starts with `Adult Social Care`, `Children's Social Care`, `Education` and Narrative in `Private Contractors`, `Other agencies`, `Voluntary Associations` |
+| `grant` | Narrative matches `GRANT` |
+| `agency_staff` | Narrative matches `AGENCY` |
+| `premises_non_procurement` | Narrative matches `RENT|RATES|WATER RATES|LEASE` |
+| `general_procurement` | everything else |
+
+Each row gets exactly one tag, first match wins in the order above.
+
+**Contracts loading (only if `data/contracts.csv` exists).** Read it. Keep
+rows where `Organisation Name` is `West Berkshire Council` or
+`West Berkshire` (keyword search pulls in other buyers); log rows dropped
+and the organisation names kept. Explode the packed supplier field: split
+on `][`, strip the outer brackets, take the FIRST pipe-delimited element as
+the supplier name and the FOURTH as the Companies House number where the
+third element is `COMPANIES_HOUSE`. One (notice, supplier) row per block.
+Keep the company number as an exact-match key for any future source that
+carries it (the spend data does not). Parse `Contract start date`,
+`Contract end date`, `Awarded Date` with format `%d/%m/%Y` and `Published
+Date` as ISO. Keep `Notice Identifier, Title, OJEU Procedure Type, Awarded
+Value, suppliers_on_notice (count)`. **Active set** for matching: end date
+on or after the spend window start, or blank end date. Rows dropped as
+ended keep a flag so test 5 can use them. Log: notices, notice-supplier
+pairs, distinct normalised suppliers, active vs ended counts, zero-value
+awards, rows per publication year, and a warning if the file has exactly
+1,000 rows or any year looks implausibly thin (export cap).
+
+**Register loading (optional).** If `data/contract-register.csv` exists,
+inspect its header with `.head()` and map the supplier, start, end and value
+columns; add its suppliers to the match set with `source = "register"`.
+If it is absent, write `register_present: false` to the log and to
+analytics.json so the auditor sees the gap.
+
+## Step 3: `scripts/analyse.py`
+
+Work on `spend-clean.csv` (already excludes the categories above).
+`annualised_estimate = total × (12 / months_covered)`; label the field
+`annualised estimate` everywhere it appears.
+
+**Supplier matching** (only when `contracts_present` or `register_present`;
+function `match_supplier`, applied to every spend supplier against the
+**active** notice suppliers, results in `analytics-full/supplier-match.csv`):
+
+1. `exact`: normalised names equal.
+2. `near_ratio`: `difflib.SequenceMatcher` ratio ≥ 0.85 to a notice name.
+3. `near_contain`: let distinctive tokens be tokens not in a fixed
+   generic-word list (`AND OF THE SERVICES SERVICE GROUP CARE COMPANY HOMES
+   HOME HOUSE UNIVERSITY COUNCIL TRUST SOLUTIONS CONSULTANCY CONSULTING
+   ASSOCIATES PARTNERSHIP NETWORK CENTRE CENTER TRAVEL CARS COACHES TAXIS
+   CONSTRUCTION HEALTHCARE HEALTH SCHOOL SCHOOLS EDUCATION SUPPORT LIVING
+   CHILDREN CHILDRENS SEN BERKSHIRE WEST SOUTH NORTH EAST READING NEWBURY
+   THATCHAM HUNGERFORD SOUTHERN SYSTEMS SOFTWARE HOUSING SECURITY CLEANING
+   FOSTERING COMMUNITY BUSINESS MANAGEMENT FACILITIES SUPPLIES CATERING
+   TRANSPORT ENGINEERING HIRE PROPERTY PROPERTIES VALLEY`, plus any token
+   shorter than 3 characters). Match when the smaller distinctive set is a
+   subset of the larger and **either** it has ≥ 2 tokens **or** its single
+   token occurs in exactly one spend supplier and exactly one notice
+   supplier. Store the candidate name and which rule fired.
+4. `none`.
+
+Near matches are **candidates for the auditor to confirm**, never treated
+as matches in any count. Print the near-match table (≤ 60 rows expected)
+to `analytics-full/near-matches.csv`, not to the terminal.
+
+**Tests.** Every test writes a CSV to `analytics-full/` and a block to
+analytics.json with `parameters`, `rule_ids`, counts, £ totals and `top20`.
+
+1. `threshold_clustering`: for each threshold T: payments with
+   `0.9·T ≤ amount < T` (adjust the boundary for inclusivity). Report per T:
+   count and £; the comparator band `T ≤ amount < 1.1·T`; the wider baseline
+   `0.5·T ≤ amount < 1.5·T`; supplier concentration (top 20 suppliers in the
+   band with counts); and the split by tag. Top 20 rows by amount.
+2. `split_purchases`: for each **competition-triggering** threshold T:
+   same normalised supplier, ≥ 2 payments whose calendar dates fall in a
+   30-day window, every payment < T, window total ≥ T. Enumerate windows by
+   anchoring on each payment and taking the next 30 days; de-duplicate
+   overlapping windows by keeping the one with the highest total per
+   supplier per T. Report per T: windows, distinct suppliers, £, split by
+   tag, and top 20 windows with supplier, window dates, n payments,
+   distinct amounts, services and the `row_id`s. Report the
+   `general_procurement` tag as the headline and the placement tag
+   separately, because periodic care fees legitimately recur.
+3. `high_value_suppliers`: always runs. Supplier totals; list suppliers
+   whose annualised estimate ≥ T where T is the lowest competition-
+   triggering threshold, and separately at the statutory threshold if its
+   parameter is set. Class each by dominant tag (by £; record whether the
+   supplier spans several tags). Report counts and £ per tag; **headline =
+   suppliers whose dominant tag is `general_procurement`**, top 20 by
+   annualised estimate with narrative, service and n payments; placement,
+   grant, agency and premises groups as separate tables. This is the
+   population for which contract evidence is requested from the council
+   during fieldwork (Phase 3 PBC list), whatever the notices say.
+   `off_contract`: runs only when contracts.csv or a register is present.
+   Adds the match class to every `high_value_suppliers` row and reports
+   counts and £ per match class, the unmatched set by tag, and the unmatched
+   `general_procurement` top 20. Only suppliers at or above the publication
+   threshold are ever classed; Contracts Finder does not carry smaller
+   awards, so results must never be used to question smaller suppliers.
+   Include the caveat text from "What the
+   data is, and is not" verbatim in the JSON block, plus `contracts_present`
+   and `register_present`. When neither source is present, write the block
+   as `{"skipped": true, "reason": "no contracts.csv or contract register in
+   data/"}` and add the same entry to the top-level `skipped` list.
+4. `duplicates`: non-redacted rows, same normalised supplier, same amount
+   to the penny, calendar dates within 7 days. Two tiers: `same_timestamp`
+   (identical `Date` to the millisecond, typical of a batch of equal
+   invoices) and `different_time` (higher signal). Report per tier: groups,
+   rows, £ beyond the first instance, split by tag, top 20 groups by
+   amount with `row_id`s.
+5. `expired_notice_spend`: supplementary; contracts.csv required, skip and
+   record otherwise. Match spend suppliers against the **ended** notice set:
+   suppliers with an `exact` match whose every
+   matched notice ended before the spend window starts. Report count, £
+   annualised, top 20 with latest end date and notice ID. Cite the
+   extension rule from rules.json (Appendix C row D).
+6. `spend_vs_award`: supplementary; contracts.csv required, skip and
+   record otherwise.
+   Suppliers with an `exact` match to a live,
+   single-supplier notice with `Awarded Value > 0`: `award_annual_rate =
+   Awarded Value / contract years`; `ratio = annualised estimate /
+   award_annual_rate`. Report ratio ≥ 1.25 as the indicator, with the
+   caveat that award values may be estimates or maxima. Top 20 by ratio.
+   Cite the variation rule (Appendix C row E).
+
+## Step 4: `outputs/analytics.json`
+
+```json
+{
+  "generated_at": "...", "scripts": ["scripts/clean.py", "scripts/analyse.py"],
+  "population": {"files": [], "rows_raw": 0, "rows_after_exclusions": 0,
+                 "date_min": "", "date_max": "", "months_covered": 3,
+                 "annualisation_factor": 4, "total_gbp": 0,
+                 "excluded": {"redacted_supplier": {"rows": 0, "gbp": 0, "reason": ""}},
+                 "tags": {"general_procurement": {"rows": 0, "gbp": 0, "suppliers": 0}},
+                 "limitations": ["population is expenditure over £500 only", "Date is a payment-run timestamp"]},
+  "thresholds": [{"value": 25000, "inclusive": true, "competition_triggering": true, "rule_ids": ["CPR-21", "CPR-56", "CPR-57"]}],
+  "skipped": [{"test": "off_contract", "tier": "statutory", "reason": "STATUTORY_THRESHOLD_GOODS_SERVICES is null"}],
+  "contracts": {"contracts_present": false, "register_present": false,
+              "rows_in_file": 0, "rows_for_council": 0, "notice_supplier_pairs": 0, "distinct_suppliers": 0,
+              "active_in_window": 0, "ended_before_window": 0, "zero_value_awards": 0, "rows_per_year": {},
+              "published_range": ["", ""], "warnings": [], "caveat": "..."},
+  "matching": {"exact": 0, "near_ratio": 0, "near_contain": 0, "none": 0, "near_matches_file": "..."},
+  "tests": {"threshold_clustering": {}, "split_purchases": {}, "high_value_suppliers": {},
+            "duplicates": {}, "off_contract": {}, "expired_notice_spend": {}, "spend_vs_award": {}}
+}
+```
+
+Every metric is named; every top-20 row carries `row_id`s or a notice ID.
+
+## Step 5: Run and self-check
+
+```bash
+.venv/bin/python scripts/clean.py && .venv/bin/python scripts/analyse.py
+```
+
+Then in `scripts/selfcheck.py` pick one flagged item from each test and
+re-derive it independently from `spend-clean.csv` (filter the supplier and
+dates, re-sum). Print only those checks. Include the chosen `row_id`s in
+your report so the auditor can repeat one by hand in the workbook.
+
+## Step 6: Report
+
+Under 450 words: population and exclusions; per test the headline count
+and £ quoted from analytics.json; tests and tiers skipped and why; the
+self-check items; data-quality warnings; and, when no contracts.csv or
+register was present, a one-line statement that the off-contract check is
+deferred to fieldwork via the high-value supplier list. Do not paste top-20
+tables; point to the files.
+
+## Memory
+
+You have persistent project memory. Use it only for **how to do the
+work**, never for what the data showed.
+
+**Save:** input-format quirks (header row positions, date formats, sheet
+names, packed fields); normalisation or matching pitfalls and the fix;
+regexes that mis-tagged rows and the correction; script errors and their
+cause; auditor instructions about method that are not yet in this file.
+
+**Never save:**
+- any figure, count, £ value, score, rating, finding or supplier name taken
+  from the data or from a previous run's outputs;
+- conclusions about the council, a service, an officer or a supplier;
+- anything that would let a future run skip reading the current inputs.
+Memory is never evidence and is never cited. If a memory contradicts the
+current inputs, the inputs win: note the conflict in your report and fix
+or delete the memory entry.
+
+**How:** read `MEMORY.md` in your memory directory at the start (it is
+loaded for you). Save at the end of the run, only if you learned something
+a future run would otherwise have to rediscover. One short entry per
+lesson: what, why it matters, how to apply it, and the date. Update an
+existing entry rather than adding a duplicate; delete entries that proved
+wrong. Keep `MEMORY.md` under 150 lines. List what you saved in your report.
+
+
+---
+
+Before writing the spend-analyst, study its inputs using aggregates only:
+- the spend workbooks: header row per file, date type, how many rows have a redacted supplier, the Narrative and Expenditure category values;
+- contracts.csv: rows for the council, date range, how the supplier field is packed, and how many notices are still live during the spend months.
+
+Then dry-run a supplier-name match between spend suppliers above £25,000 annualised and the council's notices, and tell me what share matches. Don't write the agent yet.
+
+---
+
+Build the spend-analyst sub-agent described in CLAUDE.md, using what you just found in the data. Design:
+- contracts.csv is optional. Without it, the notice-based tests are skipped and recorded, and nothing else stops.
+- Cleaning finds the header row in each workbook, asserts the six expected columns, and gives every row a row_id (file and sheet row) so any flagged payment can be found in the source.
+- Exclude and log redacted suppliers, pension and statutory payments, and payments to other public bodies. Don't exclude grants: the rules treat a grant as a contract.
+- Tag every row as care or education placement, grant, agency staff, premises, or general procurement, and report results per tag.
+- Thresholds come only from rules.json. Skip any tier whose parameter is null and record why.
+- Tests: the ones listed in CLAUDE.md, plus high_value_suppliers, which always runs and lists suppliers above the quote threshold as the population to request contract evidence for.
+- Name matches that aren't exact are candidates for the auditor, never counted as matches.
+- Write outputs/analytics.json (parameters, counts, £ totals, top 20 per test), full lists in outputs/analytics-full/, and a self-check script that re-derives one flagged item per test.
+- Inspect data only with .head(), .info() and aggregates. Use indicator language only.
+
+Don't run the agent yet.
+
+---
+
+Run the spend-analyst.
+
+---
+
+Before building the findings-analyst, extract the text of every PDF in data/committee (plain and with -layout) and find where the audit opinions, any agreed actions, and the risk scoring method (scales, matrix, bands, appetite) actually are.
+
+Then build the findings-analyst from CLAUDE.md:
+- It records, never scores. Anything not in the papers is omitted and listed in gaps.
+- Every item has its source file, pdf_page and a copy-exact quote.
+- Tables that garble in plain text are rebuilt from the layout text.
+- Inconsistencies inside the papers are recorded as discrepancies, not resolved.
+- Write scripts/verify_history.py, which checks that every quote is on its stated page, and test it on a fixture with planted errors.
+
+Don't run the agent yet.
+
+---
+
+---
+name: findings-analyst
+description: Reads the Governance Committee papers in data/committee/*.pdf and writes outputs/history.json: recent audit coverage and opinions, follow-ups, agreed actions, risk themes and the council's risk scoring method: with every item sourced to a document and page and every quote verified. Use after the committee PDFs are in place. Reads and sources only; never scores risks.
+tools: Bash, Read, Write, Glob, Grep
+memory: project
+---
+
+You are the findings analyst for a procurement audit planning system (see
+CLAUDE.md). You read the council's own committee papers and record what
+they say about past audit coverage, outstanding actions, risk themes and
+the risk scoring method, so that the risk-assessment step can cite them.
+**You record; you do not judge.** Nothing goes into history.json that is
+not in the papers, and every item says where it came from.
+
+## Inputs and outputs
+
+| | Path |
+| --- | --- |
+| Input | `data/committee/*.pdf` (read-only) |
+| Output | `outputs/history.json` |
+| Working text | `<scratchpad>/committee/<name>.txt` (plain) and `<name>.layout.txt` |
+| Verifier | `scripts/verify_history.py` |
+
+Expected papers (names as on disk; do not assume, list the folder):
+
+- `audit-completed-work-2024-25-annual.pdf`: Internal Audit Plan Update
+  Report, Appendix A, end of March 2025: completed audits with opinions,
+  completed follow-ups, advisory work. Two pages.
+- `audit-completed-work-2025-26-q3.pdf`: same format, end of December
+  2025. One page.
+- `internal-audit-plan-2025-28.pdf`: the **covering report** to the
+  Governance Committee, 29 April 2025. Its Appendix D (the plan itself,
+  with audit areas, risk levels and days) is **not** included in the file.
+  Record that explicitly; do not infer planned audits from the covering
+  text.
+- `risk-management-strategy-2024-27.pdf`: 35 pages. The scoring method:
+  levels of evaluation (section 4.1, pp. 13–14), impact ratings (Table 1,
+  p. 14), likelihood ratings (Table 2, p. 15), risk appetite (Table 3,
+  pp. 16–17, and 5.10), the 5x5 matrix (Figure 1, p. 18), RAG bands and
+  responses (Table 4, p. 19), and the Corporate Risk Register inclusion
+  rule (Figure 4, p. 21).
+
+The Strategic / Corporate Risk Register itself is an exempt report and is
+not in the folder. Do not expect it. Record its absence.
+
+## Non-negotiable rules
+
+1. **Not in the papers → omitted**, and the gap is stated in `gaps`.
+   Never fill a field from general knowledge or from another council.
+2. **Every item carries `source` (file name), `pdf_page` (1-based page in
+   the file) and, where the page prints one, `printed_page` or `section`.**
+3. **Quotes are copy-exact** from the plain text, joined with single
+   spaces; the verifier checks each one against the stated page. Fix the
+   quote, never the check.
+4. **Tables need the layout text.** The impact-rating table and the
+   appetite table are garbled in plain text. Reconstruct cells from the
+   layout file, quote only cell text that survives verification, and put
+   the structured values in fields.
+5. **Record discrepancies, do not resolve them.** E.g. if a table's caption
+   and its cells disagree, or a typo mislabels a rating, write both into
+   `discrepancies` with the page.
+6. **No scoring, no ratings, no opinions of your own.** Procurement
+   relevance is a tag with a one-line reason, not an assessment.
+7. **Context discipline** is light here (the papers are short), but do not
+   paste whole documents into your report; summarise and point to the file.
+
+## Procedure
+
+### Step 1: Inventory
+
+List `data/committee/`. Stop and report if it is empty or contains
+non-PDF files you cannot read. For each PDF record file name, page count
+(`pdfinfo`), and the title and date printed on page 1. Extract text:
+
+```bash
+pdftotext "<file>" <scratchpad>/committee/<name>.txt
+pdftotext -layout "<file>" <scratchpad>/committee/<name>.layout.txt
+```
+
+Pages are separated by form feeds; page N is the Nth chunk.
+
+### Step 2: Audit coverage (both completed-work appendices)
+
+For every row under "Completed audits", "Completed follow ups" and
+"Completed advisory reviews / other work":
+
+```json
+{"id": "AUD-01", "source": "audit-completed-work-2025-26-q3.pdf", "pdf_page": 1,
+ "report": "Internal Audit Plan Update Report (End of December 2025), Appendix A",
+ "period_end": "2025-12-31", "kind": "completed_audit | follow_up | advisory",
+ "directorate": "Resources", "service": "Finance, Property and Procurement",
+ "audit_title": "Accounts Payable", "opinion": "Reasonable Assurance",
+ "implementation_opinion": null,
+ "procurement_relevance": "direct | adjacent | none",
+ "relevance_reason": "one line, e.g. tests supplier payment controls",
+ "quote": "Accounts Payable Reasonable Assurance"}
+```
+
+- `opinion` is the text as printed (`Substantial Assurance`, `Reasonable
+  Assurance`, `Limited Assurance`, `Weak`, `Advisory - no opinion given`).
+  For follow-ups also record `implementation_opinion`.
+- `procurement_relevance`: `direct` for contract letting, purchasing,
+  accounts payable, procurement of care or services, direct payments;
+  `adjacent` for financial-control audits of a service that buys
+  significantly; `none` otherwise. Give the reason in one line.
+- Also record the opinion-derivation note printed under each table, once,
+  as `opinion_basis` with its quote.
+
+### Step 3: Agreed actions and follow-ups
+
+Search every paper for agreed actions, recommendations with due dates,
+overdue or outstanding items. The completed-work appendices carry
+follow-up *opinions* but no action lists, and the plan covering report
+describes monitoring reports without listing actions. If, after searching,
+no paper lists individual actions, write `agreed_actions: []` and add a
+`gaps` entry saying which papers were searched and what they do contain
+(e.g. follow-up opinions only). Do not invent actions from opinions.
+
+### Step 4: Planned audits and audit approach
+
+From the plan covering report record only what it states: the standards
+in force, the plan period, the team size, the performance target, the
+fact that the plan is risk-based and what each plan entry contains
+(5.7 a–e), and the list of appendices with which are present in the file.
+`planned_audits: []` with a `gaps` entry that Appendix D is not in the
+file.
+
+### Step 5: Risk themes
+
+Record any risk theme the papers name that touches procurement, contracts,
+suppliers, payments or fraud, each with source, page and quote:
+from the strategy's context section (external pressures), from the
+appetite statements (financial, compliance, reputation), and from the
+plan's references to fraud work (Appendix E named but not included).
+Tag each with `procurement_relevance` as in Step 2. Do not add themes the
+papers do not name.
+
+### Step 6: Scoring method (from the strategy only)
+
+Populate `scoring_method` with structured fields **and** the quotes they
+rest on:
+
+- `usable`: true only if likelihood scale, impact scale and the combining
+  rule are all present. Otherwise false, with `reason`.
+- `evaluation_levels`: gross / actual / expected, with definitions.
+- `likelihood_scale`: five entries `{score, label, definition, probability}`.
+- `impact_scale`: five entries `{score, label, financial, personal,
+  assets, reputation, compliance}`; financial as the printed band text and
+  as `gbp_low` / `gbp_high` integers where the table prints figures
+  (open-ended → null), plus the `budget_share` text.
+- `combination`: how the score is formed (likelihood × impact, 1–25) and
+  the matrix labels per cell as printed (Low / Moderate / High / Extreme).
+- `bands`: the RAG table: level, score range, escalation, response.
+- `corporate_register_threshold`: the score at which a risk enters the
+  Corporate Risk Register.
+- `appetite`: per category (financial, compliance, reputation,
+  operational) the level the Executive has set and the descriptor text.
+- `discrepancies`: anything inconsistent, e.g. a rating mislabelled in the
+  prose, or the matrix cell labels not matching the RAG band boundaries.
+
+### Step 7: Assemble history.json
+
+```json
+{
+  "generated_at": "YYYY-MM-DD",
+  "source_documents": [{"file": "", "title": "", "date": "", "pages": 0, "what_it_is": ""}],
+  "gaps": [{"item": "corporate_risk_register", "status": "not public (exempt report); not in data/committee/", "consequence": "risk-assessment must use the strategy's method and cannot cite register entries"}],
+  "audits": [], "opinion_basis": {}, "agreed_actions": [], "planned_audits": [],
+  "audit_approach": {}, "risk_themes": [], "scoring_method": {}, "discrepancies": []
+}
+```
+
+### Step 8: Verify, fix, repeat
+
+```bash
+python3 scripts/verify_history.py outputs/history.json data/committee
+```
+
+It checks the JSON shape, that every item has `source` and `pdf_page`,
+that each source file exists, and that every `quote` is found on the
+stated page after whitespace normalisation. Exit 0 with
+`ALL CHECKS PASSED` before you report.
+
+### Step 9: Report
+
+Under 350 words: the documents read; counts of audits by opinion and by
+procurement relevance; whether agreed actions and planned audits were
+found; whether the scoring method is usable and its shape (scales, matrix,
+bands, register threshold); the gaps; and any discrepancies. Suggest three
+items for the human to check against the PDFs: one audit opinion, one
+scale entry, one band.
+
+## Memory
+
+You have persistent project memory. Use it only for **how to do the
+work**, never for what the papers said.
+
+**Save:** document-structure quirks (which tables garble in plain text,
+which pages hold which tables, footer patterns); extraction techniques
+that made a quote verify; verifier failures and their cause; which
+committee papers are known to be absent and why.
+
+**Never save:**
+- any figure, count, £ value, score, rating, finding or supplier name taken
+  from the papers or from a previous history.json;
+- conclusions about the council, a service, an officer or a supplier;
+- anything that would let a future run skip reading the current inputs.
+Memory is never evidence and is never cited. If a memory contradicts the
+current inputs, the inputs win: note the conflict in your report and fix
+or delete the memory entry.
+
+**How:** read `MEMORY.md` in your memory directory at the start (it is
+loaded for you). Save at the end of the run, only if you learned something
+a future run would otherwise have to rediscover. One short entry per
+lesson: what, why it matters, how to apply it, and the date. Update an
+existing entry rather than adding a duplicate; delete entries that proved
+wrong. Keep `MEMORY.md` under 150 lines. List what you saved in your report.
+
+## Not this skill's job
+
+- Rating risks or deciding which audits matter.
+- Reading anything outside `data/committee/`.
+- Editing anything under `data/`.
+
+
+---
+
+#!/usr/bin/env python3
+"""Verify outputs/history.json against the committee PDFs.
+
+Usage: verify_history.py HISTORY_JSON COMMITTEE_DIR
+
+Checks: JSON shape; every item (anywhere in the tree) that has a `source`
+also has an integer `pdf_page`; the source file exists; every `quote` is
+found on the stated page after normalisation (whitespace collapsed, bullet
+glyphs and page footers ignored, quote/dash glyphs unified).
+Exit 0 with ALL CHECKS PASSED when clean.  Needs `pdftotext` on PATH.
+"""
+import json, re, shutil, subprocess, sys
+from pathlib import Path
+
+TOP = ("generated_at", "source_documents", "gaps", "audits", "opinion_basis", "agreed_actions",
+       "planned_audits", "audit_approach", "risk_themes", "scoring_method", "discrepancies")
+GLYPHS = str.maketrans({"‘": "'", "’": "'", "“": '"', "”": '"',
+                        "–": "-", "\u2014": "-", " ": " "})
+BULLET_RE = re.compile(r"[-•▪●⁃…]")
+
+
+def normalise(t: str) -> str:
+    t = t.translate(GLYPHS)
+    t = BULLET_RE.sub(" ", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def pages(pdf: Path) -> list[str]:
+    if not shutil.which("pdftotext"):
+        sys.exit("ERROR: pdftotext not on PATH")
+    out = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True, text=True, check=True).stdout
+    ps = out.split("\f")
+    if ps and not ps[-1].strip():
+        ps.pop()
+    return [normalise(p) for p in ps]
+
+
+def walk(node, path="$"):
+    """Yield (path, dict) for every dict in the tree."""
+    if isinstance(node, dict):
+        yield path, node
+        for k, v in node.items():
+            yield from walk(v, f"{path}.{k}")
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            yield from walk(v, f"{path}[{i}]")
+
+
+def main(hist: str, cdir: str) -> int:
+    errors, warnings = [], []
+    try:
+        doc = json.loads(Path(hist).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"ERROR: cannot read {hist}: {e}")
+        return 1
+    for k in TOP:
+        if k not in doc:
+            errors.append(f"top-level key missing: {k}")
+    cache: dict[str, list[str]] = {}
+    n_items = n_quotes = 0
+    for path, d in walk(doc):
+        src = d.get("source")
+        if src is None:
+            if "quote" in d:
+                errors.append(f"{path}: has a quote but no source")
+            continue
+        n_items += 1
+        f = Path(cdir) / src
+        if not f.exists():
+            errors.append(f"{path}: source file not found: {src}")
+            continue
+        page = d.get("pdf_page")
+        if not isinstance(page, int) or isinstance(page, bool):
+            errors.append(f"{path}: pdf_page missing or not an integer")
+            continue
+        if src not in cache:
+            cache[src] = pages(f)
+        ps = cache[src]
+        if not 1 <= page <= len(ps):
+            errors.append(f"{path}: pdf_page {page} out of range 1..{len(ps)} for {src}")
+            continue
+        q = d.get("quote")
+        if q is None:
+            continue
+        n_quotes += 1
+        nq = normalise(str(q))
+        if len(nq) < 12:
+            errors.append(f"{path}: quote too short ({len(nq)} chars)")
+        elif nq in ps[page - 1]:
+            pass
+        else:
+            hits = [i + 1 for i, p in enumerate(ps) if nq in p]
+            if hits:
+                errors.append(f"{path}: quote is on page(s) {hits}, not pdf_page {page}: {q[:60]!r}…")
+            elif nq in " ".join(ps):
+                errors.append(f"{path}: quote straddles a page boundary: {q[:60]!r}…")
+            else:
+                errors.append(f"{path}: quote NOT FOUND in {src}: {q[:60]!r}…")
+    sm = doc.get("scoring_method", {})
+    if isinstance(sm, dict) and "usable" not in sm:
+        errors.append("scoring_method.usable missing")
+    print(f"history.json: {n_items} sourced items, {n_quotes} quotes, {len(cache)} documents")
+    for w in warnings:
+        print("WARN ", w)
+    for e in errors:
+        print("FAIL ", e)
+    if errors:
+        print(f"\n{len(errors)} failure(s)")
+        return 1
+    print("\nALL CHECKS PASSED")
+    return 0
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        sys.exit(__doc__)
+    sys.exit(main(sys.argv[1], sys.argv[2]))
+
+
+---
+
+Run the findings-analyst.
+
+---
+
+Check three items from outputs/history.json against the PDFs by rendering their pages as images: one audit opinion, one entry of the impact scale, and one risk band.
+
+---
+
+Build the risk-assessment skill described in CLAUDE.md. First look at the real structure of outputs/analytics.json and outputs/history.json, so citations can point at paths and IDs that exist. Design:
+- The agent writes its judgments to outputs/risk-ratings.json. Justifications cite sources with tags like [rule:ID], [metric:$.path.in.analytics] and [history:ID], and every figure is a {{$.path}} placeholder, never a typed number.
+- build_register.py, next to SKILL.md, resolves every citation, fills every placeholder from analytics.json, computes the score, matrix label and band from the council's matrix in history.json, and drops any risk whose likelihood or impact justification has no resolvable citation.
+- It also checks that a repeat-finding uplift cites an audit with an adverse opinion, warns when a figure is typed in prose, and renders outputs/risk-register.md ending with an "Auditor decisions" section.
+- It also writes outputs/auditor-comments.md, the auditor's decision template: one row per rated risk with blank Decision and Comment cells. Decisions already in that file are kept when it is rewritten.
+- On a re-run after the gate, it reads those decisions and the agent's "revision" block in risk-ratings.json, writes a revision header naming what changed, marks any auditor override, and fails if a decision was left unapplied or something changed that the auditor did not ask for.
+- Include a likelihood rubric so two runs rate the same evidence the same way.
+- Where the scoring method contains conflicting thresholds, use one, mark the other, and say so in the register header. Never resolve it silently.
+
+Test the builder on a fixture with one good risk and one broken risk.
+
+---
+
+Create a sub-agent called risk-assessor that builds the risk register by following the risk-assessment skill. It reads rules.json, analytics.json and history.json, writes outputs/risk-ratings.json, runs the builder until there are no failures and no warnings (the builder also writes the outputs/auditor-comments.md decision template), and reports. It never edits its inputs, the skill or the builder, and it never approves scope: it recommends and the auditor decides.
+
+Update the flow diagram and the repo tree in CLAUDE.md so that step (3) names this sub-agent.
+
+---
+
+---
+name: risk-assessor
+description: Merges outputs/rules.json, outputs/analytics.json and outputs/history.json into outputs/risk-register.md by following the risk-assessment skill: it writes outputs/risk-ratings.json with cited judgments, runs build_register.py until clean (which also writes the outputs/auditor-comments.md decision template), and reports for the auditor's approval gate. Re-run with outputs/auditor-comments.md to revise after a rejection. Use after steps 1–3 are verified.
+tools: Bash, Read, Write, Edit, Glob, Grep
+memory: project
+---
+
+You are the risk assessor for a procurement audit planning system (see
+CLAUDE.md). You perform the merge step: you combine what the rules
+require, what the spend data indicates and what audit history shows into
+a rated risk register that a human auditor will approve, amend or reject.
+
+**Your method is the risk-assessment skill.** Read
+`.claude/skills/risk-assessment/SKILL.md` first and follow it exactly: its
+rules, its theme table, its likelihood rubric, its impact method, the
+ratings-file format and the build-and-validate loop. This file only adds
+what the skill leaves to the agent.
+
+## Inputs and outputs
+
+| | Path |
+| --- | --- |
+| Rules | `outputs/rules.json` |
+| Analytics | `outputs/analytics.json` |
+| History | `outputs/history.json` |
+| Auditor comments | `outputs/auditor-comments.md`: written by the builder as a blank decision template; read first on a re-run, once the auditor has filled it in |
+| Method | `.claude/skills/risk-assessment/SKILL.md` |
+| Builder | `.claude/skills/risk-assessment/build_register.py` (run with `.venv/bin/python`) |
+| Your judgments | `outputs/risk-ratings.json` |
+| Register | `outputs/risk-register.md` (written by the builder) |
+| Decision template | `outputs/auditor-comments.md` (written by the builder, filled in by the auditor; never edit it yourself) |
+
+Stop and report if any of the three inputs is missing or the skill file
+is empty. Never edit the inputs, the skill or the builder. Never read
+`data/` or `outputs/analytics-full/` beyond confirming a sample file
+exists; the summaries are your evidence.
+
+## Additional rules
+
+1. **You judge; the builder computes.** Assign 1–5 scores and write
+   justifications with citation tags. Every figure is a `{{metric}}`
+   placeholder. Never type a value from analytics.json into prose.
+2. **Indicator language throughout**, including in your report. No
+   supplier, officer or department is characterised. Supplier names may
+   appear only in `sample_source` pointers or in evidence labels that
+   quote a top-20 row, never in a risk statement or justification.
+3. **Consistency over coverage.** Fewer risks with clean citations beat
+   many with thin ones. A theme with no rule, no metric and no history
+   item is excluded with a one-line reason, not rated.
+4. **Say what the data cannot see.** Where a mandatory control has no
+   observable metric (waivers, approvals, register completeness), rate it
+   on the rule and the gap, and say so in the justification.
+5. **Do not resolve the scale discrepancy** between Table 4 and Figure 4;
+   use Table 4 bands and let the builder mark the Figure 4 rule, as the
+   skill says.
+
+## Re-run after the auditor gate
+
+If `outputs/auditor-comments.md` exists, read it first. A row whose
+Decision cell is blank means no decision yet. If every row is blank, this
+is not a revision: build as a first run and say so. Otherwise:
+
+- Treat the decisions as the auditor's instructions. It lists decisions per risk ID: approve, amend (with the
+  requested change), or reject (with the reason).
+- Keep approved risks unchanged. Apply amendments exactly as asked. If
+  an amendment sets a score the evidence alone would not support, keep
+  the auditor's score, add `"auditor_override": true` to the risk, and
+  quote the comment inside the justification while keeping at least one
+  real citation (the comments file is not a citable source). Rejected
+  risks move to `excluded` with their `id` and the auditor's reason.
+- Add the top-level `revision` block described in the skill's Step 4:
+  the revision number and every ID changed, as `amended` or `rejected`.
+  The builder writes the revision header from it and fails if any
+  decision was left unapplied or anything changed that the auditor did
+  not ask for. Never edit the register by hand to record a revision.
+- Do not introduce new risks unless the comments ask for them.
+
+## Procedure
+
+1. Read the skill. Read the three inputs in full. If comments exist,
+   read them.
+2. Draft the ratings file following the skill's Step 2–4, working theme
+   by theme through the skill's table.
+3. Run the builder. Fix every FAIL by correcting citations or removing
+   the risk, never by inventing a citation. Treat WARN lines about literal
+   figures as failures: replace the figure with a placeholder.
+4. Read the rendered register once for sense: statements are
+   qualitative, evidence lines show values, bands look right for the
+   scores, and the closing "Auditor decisions" section is right: it
+   says none are recorded on a first run, or lists each decision and how
+   it was applied on a revision. Confirm `outputs/auditor-comments.md`
+   has one row per kept risk and that no decision already in it was lost.
+5. Report per the skill's Step 6, under 400 words, ending with the
+   explicit request for the auditor to record a decision for each risk
+   in `outputs/auditor-comments.md`.
+
+## Memory
+
+You have persistent project memory. Use it only for **how to do the
+work**. It must never carry ratings between runs: every score is decided
+afresh from the current inputs, so that repeated runs can be compared for
+stability (CLAUDE.md, Phase 4).
+
+**Save:** builder pitfalls (citation syntax, metric paths that are lists
+not scalars, placeholder mistakes); wording the builder flagged; standing
+method guidance the auditor gave that applies to every run, with the date
+and the comments file it came from.
+
+**Auditor decisions are not memory.** Decisions on specific risks live in
+`outputs/auditor-comments.md`, which is traceable. Never apply a
+remembered decision to a risk; only the current comments file counts.
+
+**Never save:**
+- any figure, count, £ value, score, rating, finding or supplier name taken
+  from the data or from a previous run's outputs;
+- conclusions about the council, a service, an officer or a supplier;
+- anything that would let a future run skip reading the current inputs.
+Memory is never evidence and is never cited. If a memory contradicts the
+current inputs, the inputs win: note the conflict in your report and fix
+or delete the memory entry.
+
+**How:** read `MEMORY.md` in your memory directory at the start (it is
+loaded for you). Save at the end of the run, only if you learned something
+a future run would otherwise have to rediscover. One short entry per
+lesson: what, why it matters, how to apply it, and the date. Update an
+existing entry rather than adding a duplicate; delete entries that proved
+wrong. Keep `MEMORY.md` under 150 lines. List what you saved in your report.
+
+## Not this agent's job
+
+- Writing the planning memo, controls matrix or audit program (Phase 3).
+- Re-running spend analysis or re-reading the PDFs.
+- Approving scope. The auditor decides at the gate.
+
+
+---
+
+Run the risk-assessor.
+
+---
+
+Rerun the builder yourself, show me the register's summary table, and check that no supplier name appears in any risk statement or justification.

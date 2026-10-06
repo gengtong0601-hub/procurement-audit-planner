@@ -1,0 +1,2488 @@
+Agent teams · Procurement Audit Planner
+Skip to content
+Procurement Audit Planner
+skills · sub-agents · a human gate · agent teams
+overall
+0
+/
+27
+nothing to reset
+Setup
+Setup
+0
+/
+7
+Lesson 1
+Skills
+0
+/
+2
+Lesson 2
+Sub-agents
+0
+/
+7
+Lesson 3
+The human gate
+0
+/
+3
+Lesson 4
+Agent teams
+0
+/
+8
+○
+5.1 Close the gate
+○
+5.2 Enable agent teams
+○
+5.3 Build the audit-program skill
+○
+5.4 Build the planner
+○
+5.5 Build the challenger
+○
+5.6 Build the qa-reviewer and its checks
+○
+5.7 Run the team
+○
+5.8 Sign off
+Lesson 4 of 4
+Agent teams
+Build a team of three agents that turns the approved risks into an audit planning pack and checks it before you sign off.
+An agent team is a group of agents that work at the same time and talk to each other.
+Your chat is the lead: it spawns each teammate by name from a file in
+.claude/agents/
+, and from then on the teammates message one another directly. A sub-agent does a job and reports back to you; a teammate can question another teammate's work, wait for an answer, and go again. Teams cost more than sub-agents, so they are for work that needs that back-and-forth.
+This project has one team of three.
+The planner turns the risks you approved into an audit program: for each risk, the control the Rules require, a test of it, and the exact transactions to pull. The challenger reads the same evidence and argues where the plan is weaker than it should be. The qa-reviewer runs four scripts that check quotes, figures, traceability and samples, and blocks sign-off until every one passes. Their argument happens between them; you get the finished pack and the verdict.
+One team, three teammates, talking to each other. You get the verdict.
+Watch the team run
+The same picture, moving. This replays this project's real team run. Purple wires are messages between teammates, the labels show what each message said, and the small bar on each card counts the messages it sent. Use ‹ and › to step through at your own pace.
+AGENT TEAM · LESSON 4
+1 LEAD · 3 TEAMMATES · 5 FILES
+IDLE
+you
+your chat · the lead
+IDLE
+planner
+teammate · own context
+TOOLS
+Bash, Read, Write
+SKILL
+audit-program
+IDLE
+challenger
+teammate · own context
+TOOLS
+Read, Write
+IDLE
+qa-reviewer
+teammate · own context
+TOOLS
+Bash, Read, Write
+planning-memo.md
+risk-control-matrix.md
+audit-program.md
+challenges.md
+review.md
+Messages between agents · from the real run, shortened
+No messages yet. Press run, or step through with ›.
+▸ Run demo
+‹
+›
+idle · ready
+Idle. Press run to replay this project's real agent-team run.
+The team in this project
+Three teammates and one skill. You build all four on this page, then run the team once.
+What each one is for
+audit-program (skill)
+· Lesson 4
+The planner's method. It says how a risk becomes a control, a test and a sample recipe, and it comes with build_pack.py, which draws every sample from the analytics lists, checks every transaction exists, checks every rule is accounted for, and writes the three documents. The model plans; the script computes.
+planner
+· Lesson 4
+Owns the pack. Works only on the risks you approved, writes its judgments to audit-plan.json, runs the builder until it is clean, then answers every challenge and fixes every QA failure. Output: planning-memo.md, risk-control-matrix.md, audit-program.md.
+challenger
+· Lesson 4
+Reads the register, the analytics, the history and the pack, and sends the planner one message per weak spot: a sample too thin for the score, a control with no test, a rule with no reason for being left out. It records each challenge, the planner's reply and a status in challenges.md. Points about ratings you approved are marked for you.
+qa-reviewer
+· Lesson 4
+Runs scripts/checks: every quote is in the PDF, every figure traces to the analytics, every rule leads to a risk, a control and a test, and every sampled transaction is at its row in the council's workbook. It writes review.md with the results, a verdict, and the block where you sign off. Output: review.md.
+By the end of this lesson
+A checked audit planning pack:
+planning-memo.md
+,
+risk-control-matrix.md
+and
+audit-program.md
+with the transactions to pull,
+challenges.md
+with every point answered, and
+review.md
+with four passing checks and your sign-off.
+Steps
+Step 5.1
+Close the gate
+The team works only on risks you have decided. In the last lesson you left most decisions blank on purpose; the builder for this lesson refuses to start while any risk is undecided.
+Approving the rest is one prompt. The risk-assessor applies your decisions and the register becomes revision 2.
+Prompt
+Paste into Claude Code
+Copy
+In outputs/auditor-comments.md, record approve for every risk whose Decision is still blank, then run the risk-assessor again to apply the decisions.
+What to expect
+The register header says revision 2, and the closing decisions section lists a decision for every risk.
+Nothing else changes: R-09 keeps its amended score, R-10 stays in the excluded list.
+What you should see after step 5.1
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+risk-register.md
+1
+# Procurement audit planning: risk register
+2
+3
+*Status: REVISION 2 for auditor sign-off.*
+4
+5
+*Revision 2, following auditor comments dated 2026-09-27.
+6
+Changed: R-09 (amended), R-10 (rejected).*
+Problems
+Terminal
+⎿ risks kept: 9, excluded by validation: 0, warnings: 0, failures: 0
+⏺ Every risk now has a decision: 8 approved, 1 amended, 1 rejected. The register is revision 2.
+Illustration, not a screenshot.  Your file names and counts may differ.
+Mark step 5.1 done
+Step 5.2
+Enable agent teams
+Agent teams are an experimental feature of Claude Code and are off by default. One setting in
+.claude/settings.json
+turns them on for this project. You need Claude Code 2.1.224 or newer.
+When Claude has written the file, type
+/exit
+, then start Claude Code again in the same folder so the setting takes effect.
+Prompt
+Paste into Claude Code
+Copy
+Enable agent teams for this project: add CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 to the env block of .claude/settings.json, creating the file if it does not exist, and show me the result.
+What to expect
+.claude/settings.json
+holds the setting, and Claude Code has been restarted.
+What you should see after step 5.2
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+›
+agents
+›
+skills
+settings.json
+new
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+settings.json
+1
+{
+2
+"env": {
+3
+"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+4
+}
+5
+}
+Problems
+Terminal
+⏺ Agent teams are enabled for this project. Restart Claude Code for the setting to take effect.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 5.2 done
+Step 5.3
+Build the audit-program skill
+Why we're building it
+The agent that will use it.
+The planner, which you build next, has one job: turn each risk you approved in lesson 3 into a plan an auditor can carry out at the council. For every risk it has to say which
+control
+should prevent it (a rule the council must follow, taken from
+rules.json
+), how to
+test
+that control (ask for the paperwork behind real payments and see whether the rule was followed), and which payments to check (the
+sample
+, picked from the full lists in
+outputs/analytics-full/
+). Written out, that is the audit program, plus a short planning memo and a table linking each risk to its controls and tests.
+Why it needs this skill.
+The skill is the planner's recipe for turning an approved risk into a test. It tells the planner what to decide for each risk (the control, the test step, and which payments to check) and comes with a script,
+build_pack.py
+, that turns those decisions into the three documents. The work is split on purpose. Choosing which control to test and which payments to look at is a judgment call, and the planner is good at that. Copying payment details, adding up amounts and checking nothing was missed is exact work, where a model can slip. So, as with the risk-assessment skill in step 3.5, the planner writes down its decisions, for example “check the 10 largest split purchases”, and the script picks out those exact payments from the council's data and writes the documents. Every payment in the plan is one the script found, never one the model typed.
+How to build it
+Claude first reads the register, the decisions and the column names of the
+analytics-full
+files, so the sample recipes fit the real lists.
+Choose one of these two options.
+Option 1: copy the finished skill
+Use the exact skill from this guide. It has two files and needs both.
+In VS Code's left-hand panel, right-click
+.claude/skills
+, choose
+New Folder
+, and name it
+audit-program
+.
+Right-click the new folder, choose
+New File
+, name it
+SKILL.md
+, copy the first file below into it and save.
+Right-click the folder again, choose
+New File
+, name it
+build_pack.py
+, copy the second file below into it and save.
+File
+.claude/skills/audit-program/SKILL.md
+Copy
+---
+name: audit-program
+description: Turn the auditor-approved risks in outputs/risk-register.md into the audit planning pack: planning-memo.md, risk-control-matrix.md and audit-program.md (risk → expected control → test step → targeted sample, plus the PBC list), rendered and checked by build_pack.py from the planner's judgments in outputs/audit-plan.json. Loaded by the planner teammate at Phase 3.
+---
+
+# audit-program
+
+Produce the pack a human auditor will sign off. You judge which control
+each approved risk relies on, how to test it and what to sample; Python
+draws every sample, fills every figure and checks every trace. Write your
+judgments to `outputs/audit-plan.json`, then let `build_pack.py` render
+`planning-memo.md`, `risk-control-matrix.md` and `audit-program.md`.
+Show the full file (166 lines). Copy always copies all of it.
+File
+.claude/skills/audit-program/build_pack.py
+Copy
+#!/usr/bin/env python3
+"""Validate outputs/audit-plan.json and render the audit planning pack.
+
+Usage: build_pack.py [PLAN_JSON] [--gate]
+       [--rules outputs/rules.json] [--analytics outputs/analytics.json]
+       [--ratings outputs/risk-ratings.json] [--register outputs/risk-register.md]
+       [--comments outputs/auditor-comments.md] [--full outputs/analytics-full]
+       [--out-dir outputs]
+
+--gate only checks the auditor gate: every risk in the register has a
+decision and the register is a revision that applied them. It prints the
+approved scope and exits 0, or names what is missing and exits 1.
+Show the full file (556 lines). Copy always copies all of it.
+Option 2: ask Claude Code to write the skill
+Claude studies the register and the analytics lists first, then writes the skill and its builder. This is how the skill in this guide was made.
+Prompt
+Paste into Claude Code
+Copy
+Build the audit-program skill described in CLAUDE.md. First look at outputs/risk-register.md, outputs/auditor-comments.md, outputs/risk-ratings.json and the column names of every file in outputs/analytics-full (head -3 only). Design:
+- The planner writes its judgments to outputs/audit-plan.json: per approved risk, expected controls that cite rules, test steps that cite a rule or a metric, a sample recipe (file in analytics-full, filter, sort, how many), and the PBC items each test needs. Memo text uses {{$.path}} placeholders for every figure.
+- build_pack.py, next to SKILL.md, computes the approved scope from auditor-comments.md and risk-ratings.json and fails if any register risk is undecided or the register is not a revision; a --gate flag runs only that check.
+- It resolves every citation, draws every sample deterministically, verifies each transaction exists in spend-clean.csv and writes it to outputs/samples/<test>.csv, checks every control has a test, and checks every rule in rules.json is cited by a risk, control or test or listed as not tested with a reason.
+- It renders planning-memo.md, risk-control-matrix.md and audit-program.md (ending with the PBC list) and writes pack-figures.json listing every figure it computed itself.
+- Size samples by score and use indicator language throughout.
+
+Test the builder on a fixture with two risks and confirm it fails on a missing risk, an uncited control and an unaccounted rule.
+What to expect
+Either way,
+.claude/skills/audit-program/SKILL.md
+and
+build_pack.py
+exist.
+build_pack.py --gate
+reports the register revision, ten decisions, nine risks approved and in scope, and one not.
+What you should see after step 5.3
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+›
+agents
+⌄
+skills
+⌄
+audit-program
+build_pack.py
+new
+SKILL.md
+new
+›
+extract-rules
+›
+risk-assessment
+settings.json
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+SKILL.md
+1
+---
+2
+name: audit-program
+3
+description: Turn the auditor-approved risks in outputs/risk-register.md into the audit planning pack: planning-memo.md, risk-control-matrix.md and audit-program.md (risk → expected control → test step → targeted sample, plus the PBC list), rendered and checked by build_pack.py from the planner's judgments in outputs/audit-plan.json. Loaded by the planner teammate at Phase 3.
+4
+---
+5
+6
+# audit-program
+7
+8
+Produce the pack a human auditor will sign off. You judge which control
+9
+each approved risk relies on, how to test it and what to sample; Python
+Problems
+Terminal
+⎿ Bash(.venv/bin/python .claude/skills/audit-program/build_pack.py --gate)
+⎿ gate closed: register revision 2, 10 decisions · approved, in scope: 9 · not in scope: R-10 (reject)
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 5.3 done
+Step 5.4
+Build the planner
+Why we're building it
+Its role on the team.
+In an audit department, one auditor drafts the plan, a senior colleague reviews it, someone checks the facts, and the head of audit signs it off. This team works the same way, and the planner is the drafter. Using the audit-program skill from step 5.3, it turns each risk you approved into a control, a test and a set of payments to check, and produces the planning pack. It is the only agent that changes the plan; the other two can only question it.
+Why a teammate and not a sub-agent.
+The agents in lesson 2 each did one job, handed back a result and stopped; none of them ever heard from another agent. The planner's first draft is only the start. The challenger will question it and the qa-reviewer will report anything that fails a check, and the planner has to answer each point, fix the plan or explain why not, and rebuild, often more than once. That back-and-forth between agents is what an agent team is for. There is one thing it may not do: change a rating or scope decision you made in lesson 3. If a challenge is about one of those, it passes it back to you for sign-off.
+Inside the planner: load the method, plan each risk, build and check, then answer the team.
+How to build it
+Choose one of these two options.
+Option 1: ask Claude Code to write the agent
+Claude writes the agent around the audit-program skill you just built.
+Prompt
+Paste into Claude Code
+Copy
+Create an agent called planner for the Phase 3 agent team in CLAUDE.md. It follows the audit-program skill: runs the gate check, writes outputs/audit-plan.json for the approved risks only, and runs build_pack.py until there are no failures. It owns only audit-plan.json; the builder writes the pack. Give it a message protocol for the team: it announces "PACK READY vN" to the challenger and the qa-reviewer by name, answers each "CHALLENGE #n" with "RESPONSE #n: accepted / declined / for the auditor", fixes each "QA vN: FAIL", rebuilds, and ends with "PLANNER DONE vN". Two challenge rounds at most. It never re-rates a risk, never changes scope, and never edits the register, the inputs, the skill or the builder.
+Option 2: copy the finished agent
+Use the exact agent from this guide. It follows the audit-program skill from the previous step, so do that step first.
+In VS Code's left-hand panel, right-click
+.claude/agents
+, choose
+New File
+, and name it
+planner.md
+.
+Copy the file below into it and save.
+File
+.claude/agents/planner.md
+Copy
+---
+name: planner
+description: Agent-team member that owns the audit planning pack. Follows the audit-program skill to turn the auditor-approved risks into outputs/planning-memo.md, outputs/risk-control-matrix.md and outputs/audit-program.md, via outputs/audit-plan.json and build_pack.py. Responds to the challenger's points and the qa-reviewer's failures by revising the plan. Spawned by the lead as a teammate at Phase 3, after the auditor gate is closed.
+tools: Bash, Read, Write, Edit, Glob, Grep
+memory: project
+---
+
+You are the planner on a three-member agent team (planner, challenger,
+qa-reviewer) that produces the audit planning pack for a procurement
+audit (see CLAUDE.md, Phase 3). You own three documents and the plan
+behind them. The other two review your work; you do not review theirs.
+Show the full file (76 lines). Copy always copies all of it.
+What to expect
+Either way,
+.claude/agents/planner.md
+exists.
+What you should see after step 5.4
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+⌄
+agents
+findings-analyst.md
+planner.md
+new
+risk-assessor.md
+spend-analyst.md
+›
+skills
+settings.json
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+planner.md
+1
+---
+2
+name: planner
+3
+description: Agent-team member that owns the audit planning pack. Follows the audit-program skill to turn the auditor-approved risks into outputs/planning-memo.md, outputs/risk-control-matrix.md and outputs/audit-program.md, via outputs/audit-plan.json and build_pack.py. Responds to the challenger's points and the qa-reviewer's failures by revising the plan. Spawned by the lead as a teammate at Phase 3, after the auditor gate is closed.
+4
+tools: Bash, Read, Write, Edit, Glob, Grep
+5
+memory: project
+6
+---
+7
+8
+You are the planner on a three-member agent team (planner, challenger,
+Problems
+Terminal
+⏺ Added the planner. It owns audit-plan.json and answers the other two by message.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 5.4 done
+Step 5.5
+Build the challenger
+Why we're building it
+Why plans get a second pair of eyes.
+Whoever writes a plan has blind spots: a sample that is too small to show anything, a test that would never catch the problem it is meant to catch, a rule quietly left out. In an audit department, a manager reviews the plan before fieldwork starts for exactly this reason. The challenger is that reviewer.
+What it looks at.
+It reads the same evidence the planner used: the register and your decisions (lesson 3),
+analytics.json
+and
+history.json
+(lesson 2), and the rules (lesson 1). Then it reads the planner's documents and asks, risk by risk, whether the plan is as strong as the evidence. Like the register in lesson 3, it has to cite: every challenge names a rule, a figure in
+analytics.json
+, a past audit in
+history.json
+, or a test in the plan. No citation, no challenge, so it argues from evidence, never from opinion.
+Six kinds of challenge, in two groups.
+Four are about the plan, and the planner must fix them or say why not: a
+sample
+too thin for the risk's score, a
+control
+the rules require with no test of it, a
+test
+that wouldn't detect the pattern, and a rule left out for a reason that doesn't hold (
+coverage
+). Two are about your decisions: a
+rating
+that looks low next to a strong figure in the data, and a
+scope
+decision that leaves out a theme where a past audit found problems (the same “repeat finding” idea that raised likelihood by one point in the register). The planner can't change those, so they are marked *for the auditor* and come back to you at sign-off.
+It owns one file,
+challenges.md
+:
+each point, its evidence, what it asked for, the planner's reply, and a status. It gets two rounds at most, so the argument can't loop forever, and nothing may be left open at the end. It is a teammate because it talks to the planner directly, and checks each accepted change in the rebuilt pack itself.
+Inside the challenger: read the plan, challenge it with evidence, check the fixes, close every point.
+How to build it
+Choose one of these two options.
+Option 1: ask Claude Code to write the agent
+Claude writes the challenger to match the planner's message protocol.
+Prompt
+Paste into Claude Code
+Copy
+Create an agent called challenger for the Phase 3 agent team in CLAUDE.md. It reads the register, auditor-comments.md, risk-ratings.json, analytics.json, history.json, rules.json and the planner's pack, and owns only outputs/challenges.md. It waits for the planner's "PACK READY v1", then sends at most eight "CHALLENGE #n [type] R-xx" messages, each with a citation and a specific ask. Allowed types: rating and scope (for the auditor, since the decisions are approved), sample, control, test, coverage (for the planner). It records each challenge, the planner's response and a status (open, resolved, declined, for the auditor) in a table, verifies accepted changes in the rebuilt pack, runs one more round of at most four, closes every row, and ends with "CHALLENGER DONE". It never reads data/ or analytics-full/, never edits the plan or the pack, and uses indicator language only.
+Option 2: copy the finished agent
+Use the exact agent from this guide.
+In VS Code's left-hand panel, right-click
+.claude/agents
+, choose
+New File
+, and name it
+challenger.md
+.
+Copy the file below into it and save.
+File
+.claude/agents/challenger.md
+Copy
+---
+name: challenger
+description: Agent-team member that challenges the audit planning pack. Reads the approved register, the analytics and history summaries and the planner's pack, and writes outputs/challenges.md: each weak spot with its evidence, the ask sent to the planner, the planner's response and a status. Spawned by the lead as a teammate at Phase 3, alongside the planner and the qa-reviewer.
+tools: Read, Write, Glob, Grep
+memory: project
+---
+
+You are the challenger on a three-member agent team (planner, challenger,
+qa-reviewer) that produces the audit planning pack (see CLAUDE.md,
+Phase 3). Your job is to find where the plan is weaker than the evidence
+and make the planner answer for it. You own one file and change nothing
+else.
+Show the full file (86 lines). Copy always copies all of it.
+What to expect
+Either way,
+.claude/agents/challenger.md
+exists.
+What you should see after step 5.5
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+⌄
+agents
+challenger.md
+new
+findings-analyst.md
+planner.md
+risk-assessor.md
+spend-analyst.md
+›
+skills
+settings.json
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+challenger.md
+1
+---
+2
+name: challenger
+3
+description: Agent-team member that challenges the audit planning pack. Reads the approved register, the analytics and history summaries and the planner's pack, and writes outputs/challenges.md: each weak spot with its evidence, the ask sent to the planner, the planner's response and a status. Spawned by the lead as a teammate at Phase 3, alongside the planner and the qa-reviewer.
+4
+tools: Read, Write, Glob, Grep
+5
+memory: project
+6
+---
+7
+8
+You are the challenger on a three-member agent team (planner, challenger,
+Problems
+Terminal
+⏺ Added the challenger. Six challenge types, every one cited; it owns challenges.md.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 5.5 done
+Step 5.6
+Build the qa-reviewer and its checks
+Why we're building it
+Why a final check.
+Before audit work reaches the person who signs it, someone checks that it is accurate: the rules are quoted correctly, the figures are right, and every payment it tells you to pull really exists. This is called
+quality assurance
+. With a real council's data it matters: one wrong figure, or a sampled payment that isn't there, and nobody can trust the rest of the plan.
+You have met this idea at every stage.
+verify_quotes.py
+checked the rule quotes in lesson 1,
+verify_history.py
+and
+selfcheck.py
+checked the analysts' work in lesson 2, and
+build_register.py
+refused any uncited rating in lesson 3. The qa-reviewer runs the same kind of checks once more, over the finished pack as a whole, and independently of the planner who built it.
+Four checks, each its own script in
+scripts/checks/
+.
+Quotes
+: every rule quote is in the rulebook PDF, on the page it claims.
+Numbers
+: every figure in the three documents can be found in
+analytics.json
+,
+rules.json
+, the builder's own figures or the sample files, so nothing was typed from memory.
+Trace
+: every rule leads to a risk, a control or a test (or has a reason for being left out), every approved risk is planned, every High risk is in scope or its exclusion is recorded, and no challenge is left open.
+Samples
+: every payment the plan tells you to pull is in the cleaned data *and* at its stated row in the council's original workbook, with the same supplier and amount.
+Scripts, not reading.
+A script can't be persuaded that a figure “looks about right”. The reviewer runs the checks and reports exactly what they print. It fixes nothing: any failure means
+BLOCKED
+, and it messages the planner with what failed, then re-runs on every new version. That messaging is why it's a teammate. When all four pass, it writes
+review.md
+with the results, the verdict and the block where you sign off in step 5.8.
+Inside the qa-reviewer: wait for each version, run the four checks, report, and block sign-off until all pass.
+How to build it
+Choose one of these two options.
+Option 1: ask Claude Code to write the agent and the checks
+Claude writes the four check scripts, a runner, and the agent that runs them.
+Prompt
+Paste into Claude Code
+Copy
+Create the qa-reviewer agent for the Phase 3 agent team in CLAUDE.md, and the scripts it runs in scripts/checks/:
+- check_quotes.py: runs the extract-rules verifier on rules.json against data/contract-rules.pdf, and checks every rule quote excerpt in risk-register.md matches rules.json.
+- check_numbers.py: every figure of three or more digits or with a £ sign in planning-memo.md, risk-control-matrix.md and audit-program.md is a value in analytics.json, pack-figures.json, rules.json or outputs/samples/*.csv. Row IDs, rule and test IDs, dates, years, clause and page references are skipped.
+- check_trace.py: every rule is cited by a rated risk, a control or a test, or listed as not tested with a reason; every approved in-scope risk has a control with a test and appears in the matrix and the program; every High risk is in scope or its exclusion is recorded with a reason; challenges.md exists, every row cites evidence, and none is open.
+- check_samples.py: every transaction in outputs/samples/*.csv and every row ID in audit-program.md exists in spend-clean.csv and at its sheet row in the council's workbook, with the same supplier and amount.
+- run_checks.py: runs all four and prints one table and a verdict.
+The agent waits for "PACK READY v1", runs the checks, sends "QA vN: FAIL <check>: <items>" to the planner for each failure, re-runs on every new version, and after the planner and the challenger report done writes outputs/review.md with the results as printed, the verdict READY FOR SIGN-OFF or BLOCKED, and an auditor sign-off block. It fixes nothing and softens nothing.
+
+Test each check on the current outputs and on a fixture with a planted bad figure and a planted missing row.
+Option 2: copy the finished agent and checks
+Use the exact files from this guide. The agent needs all five scripts.
+In VS Code's left-hand panel, right-click
+.claude/agents
+, choose
+New File
+, name it
+qa-reviewer.md
+, copy the first file below into it and save.
+Right-click
+scripts
+, choose
+New Folder
+, and name it
+checks
+.
+In
+scripts/checks
+, create
+run_checks.py
+,
+check_quotes.py
+,
+check_numbers.py
+,
+check_trace.py
+and
+check_samples.py
+, copying each file below into the one with its name.
+File
+.claude/agents/qa-reviewer.md
+Copy
+---
+name: qa-reviewer
+description: Agent-team member that checks the audit planning pack before sign-off. Runs scripts/checks/run_checks.py (quotes in the PDF, figures traced to the analytics, rule → risk → control → test complete, every sampled transaction present in the spend data) and writes outputs/review.md with the results, a verdict and the auditor's sign-off block. Blocks sign-off until every check passes. Spawned by the lead as a teammate at Phase 3.
+tools: Bash, Read, Write, Glob, Grep
+memory: project
+---
+
+You are the qa-reviewer on a three-member agent team (planner,
+challenger, qa-reviewer) that produces the audit planning pack (see
+CLAUDE.md, Phase 3). You decide nothing about the audit. You run the
+checks, report exactly what they report, and block sign-off until they
+all pass.
+Show the full file (78 lines). Copy always copies all of it.
+File
+scripts/checks/run_checks.py
+Copy
+#!/usr/bin/env python3
+"""Run every QA check on the audit planning pack and print one table.
+
+Runs check_quotes.py, check_numbers.py, check_trace.py and check_samples.py
+with the same interpreter, prints each script's FAIL lines and SUMMARY line,
+then a table of check | result | summary. Exit 0 only when every check passes.
+"""
+import subprocess, sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+CHECKS = ["check_quotes.py", "check_numbers.py", "check_trace.py", "check_samples.py"]
+Show the full file (39 lines). Copy always copies all of it.
+File
+scripts/checks/check_quotes.py
+Copy
+#!/usr/bin/env python3
+"""QA check: every quote exists in its source.
+
+1. Runs the extract-rules verifier: every verbatim_quote in outputs/rules.json
+   is found in data/contract-rules.pdf on its stated page.
+2. Every rule quote excerpt printed in outputs/risk-register.md
+   ("- [rule:CPR-xx] clause ... : "...") is the start of that rule's quote.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import json, re, subprocess, sys
+from pathlib import Path
+Show the full file (53 lines). Copy always copies all of it.
+File
+scripts/checks/check_numbers.py
+Copy
+#!/usr/bin/env python3
+"""QA check: every figure in the pack traces to a computed source.
+
+Scans outputs/planning-memo.md, risk-control-matrix.md and audit-program.md
+for figures (three or more digits, or a £ amount). Each must be a value in
+outputs/analytics.json, outputs/pack-figures.json, outputs/rules.json or one
+of outputs/samples/*.csv. Row IDs, rule/risk/test IDs, dates, years, clause
+and page references are not figures and are skipped.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import csv, json, re, sys
+from pathlib import Path
+Show the full file (82 lines). Copy always copies all of it.
+File
+scripts/checks/check_trace.py
+Copy
+#!/usr/bin/env python3
+"""QA check: traceability of the pack.
+
+1. Every rule in outputs/rules.json is cited by a rated risk (risk-ratings.json),
+   a control or a test (audit-plan.json), or listed in rules_not_tested with a reason.
+2. Every approved, in-scope risk (auditor-comments.md + risk-register.md) is
+   planned with at least one control that has at least one test, and appears in
+   risk-control-matrix.md and audit-program.md; nothing unapproved is planned.
+3. Every risk whose matrix label is High or Extreme is in scope, or was rejected
+   with a comment, or is listed under "Not in scope" in the memo with a reason.
+4. outputs/challenges.md exists, every row cites evidence, and no row is open.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+Show the full file (120 lines). Copy always copies all of it.
+File
+scripts/checks/check_samples.py
+Copy
+#!/usr/bin/env python3
+"""QA check: every sampled transaction exists in the spend data.
+
+For every row in outputs/samples/T-*.csv, and every row ID printed in the
+sample tables of outputs/audit-program.md:
+1. the row_id is in outputs/analytics-full/spend-clean.csv with the same
+   supplier and amount;
+2. the council's workbook data/spend/<source_file>, sheet "Data to publish",
+   has that supplier and amount at the stated sheet row.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import csv, re, sys
+Show the full file (89 lines). Copy always copies all of it.
+What to expect
+Either way,
+.claude/agents/qa-reviewer.md
+and the five scripts in
+scripts/checks/
+exist.
+With option 1, Claude shows the checks catching the planted errors.
+What you should see after step 5.6
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+⌄
+.claude
+⌄
+agents
+challenger.md
+findings-analyst.md
+planner.md
+qa-reviewer.md
+new
+risk-assessor.md
+spend-analyst.md
+›
+skills
+settings.json
+›
+.venv
+›
+data
+›
+outputs
+⌄
+scripts
+⌄
+checks
+check_numbers.py
+new
+check_quotes.py
+new
+check_samples.py
+new
+check_trace.py
+new
+run_checks.py
+new
+analyse.py
+clean.py
+common.py
+selfcheck.py
+verify_history.py
+CLAUDE.md
+requirements.txt
+qa-reviewer.md
+1
+---
+2
+name: qa-reviewer
+3
+description: Agent-team member that checks the audit planning pack before sign-off. Runs scripts/checks/run_checks.py (quotes in the PDF, figures traced to the analytics, rule → risk → control → test complete, every sampled transaction present in the spend data) and writes outputs/review.md with the results, a verdict and the auditor's sign-off block. Blocks sign-off until every check passes. Spawned by the lead as a teammate at Phase 3.
+4
+tools: Bash, Read, Write, Glob, Grep
+5
+memory: project
+6
+---
+7
+8
+You are the qa-reviewer on a three-member agent team (planner,
+Problems
+Terminal
+⏺ Added the qa-reviewer and five check scripts. It runs them, reports what they say, and blocks sign-off on any failure.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 5.6 done
+Step 5.7
+Run the team
+One sentence starts it. Your chat becomes the lead: it runs the gate check, spawns the three teammates by name, and then waits. The teammates appear in a panel under your prompt; you can press ↑ or ↓ and Enter to open any one and watch it work.
+Expect permission prompts from three agents, and expect the run to take a while: the planner has nine risks to plan, and the other two each read the whole pack.
+Prompt
+Paste into Claude Code
+Copy
+Run the agent team for the audit planning pack, following the lead procedure in CLAUDE.md: check the gate, spawn planner, challenger and qa-reviewer as teammates from their files in .claude/agents, let them work through the challenge rounds and the QA checks, shut them down when all three report done, and report for sign-off.
+What to expect
+The gate check passes: nine approved risks, one not in scope.
+The three documents appear in
+outputs/
+, with
+outputs/samples/
+holding one file per test.
+challenges.md
+has every row closed; points marked *for the auditor* are listed at the end.
+review.md
+shows four checks and the verdict. If it says BLOCKED, the lead sends the pack back to the team rather than to you.
+In our run the pack went through five versions: the qa-reviewer caught one untraceable figure on v1, and twelve challenges changed the samples, added a test and brought two more rules into the plan.
+Claude Code · replay
+▶ Replay
+>
+Run the agent team for the audit planning pack…
+Bash(.venv/bin/python .claude/skills/audit-program/build_pack.py --gate)
+gate closed: register revision 1, 10 decisions · approved, in scope: 9 · not in scope: R-10 (reject)
+Spawning planner, challenger and qa-reviewer as teammates.
+●
+planner: PACK READY v1 · 9 risks, 18 controls, 25 tests, 496 transactions, 0 failures
+●
+qa-reviewer → planner: QA v1: FAIL numbers (1 figure) · challenger → planner: CHALLENGE #1 … #8
+●
+planner: RESPONSE #1 … #8 · PACK READY v3 · challenger: CHALLENGE #9 … #12 · planner: PACK READY v5
+●
+PLANNER DONE v5 · CHALLENGER DONE (11 resolved, 1 for the auditor) · QA DONE: READY FOR SIGN-OFF (4/4)
+Team shut down. Nine risks, 26 tests, 562 sampled transactions. One challenge is for you; the pack is ready for your sign-off in outputs/review.md.
+Shortened from one real run. Your counts will differ with different months of data.
+What audit-program.md holds, and how to use it
+The pack is what an auditor takes into fieldwork. Every test names the control it checks, the rule that requires it, the evidence to inspect and the exact payments to pull, each with its row in the council's workbook. Nothing in it was typed from memory: the samples were drawn by a script, the figures were filled by a script, and four more scripts checked the result.
+1. What's inside
+Document
+What it holds
+In this run
+planning-memo.md
+Purpose, background, the approved scope with your decisions, the approach, which rules are covered and which are not, and why
+9 risks in scope; 64 of 66 rules cited
+risk-control-matrix.md
+One row per expected control: the risk, the control, the rules behind it, and the tests of it
+18 controls
+audit-program.md
+Per risk: objective, controls, test steps, evidence, the sample recipe and the sampled transactions, then the PBC request list
+26 tests, 38 PBC items
+samples/
+One spreadsheet per test with the transactions to pull, each with its workbook and row
+22 files, 562 transactions
+challenges.md
+Each challenge, its evidence, the planner's reply and a status; points for you at the end
+12 challenges: 11 resolved, 1 for you
+review.md
+Four checks with their counts, the verdict, and your sign-off block
+4 of 4 pass
+Figures are from this project's run, pack v5, and will differ if you re-run it: the challenger's points shape the final plan.
+2. How an auditor uses it: one example, start to finish
+1
+Open the program at the risk you care about
+R-02, split purchases, is the highest-scored risk you approved. Its entry names the control the Rules require, aggregating a requirement before choosing the route, and the rule that says so.
+2
+Read the test and the sample
+The test asks for the orders and quotes behind each sampled 30-day window. The sample recipe is stated, and under it are the transactions, each with its workbook row.
+3
+Send the PBC list
+The last section lists what to ask the council for, item by item, with the tests that need it.
+4
+Check the challenger's points
+challenges.md
+ends with the points marked for you: places where the challenger thought a rating or a scope decision deserved a second look.
+review.md
+ties it together: four checks passed, so every quote, figure, trace and sample in the pack has been verified by a script you can rerun.
+The pack plans tests; it draws no conclusions. A sampled payment is a payment to look at, nothing more.
+What you should see after step 5.7
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+⌄
+outputs
+›
+analytics-full
+›
+samples
+new
+analytics.json
+audit-plan.json
+new
+audit-program.md
+new
+auditor-comments.md
+challenges.md
+new
+history.json
+pack-figures.json
+new
+planning-memo.md
+new
+review.md
+new
+risk-control-matrix.md
+new
+risk-ratings.json
+risk-register.md
+rules.json
+›
+scripts
+CLAUDE.md
+requirements.txt
+review.md
+1
+# QA review
+2
+3
+| Check | Result | Summary |
+4
+|---|---|---|
+5
+| quotes | PASS | rules=66 register_excerpts=28 failures=0 |
+6
+| numbers | PASS | figures_checked=587 failures=0 |
+7
+| trace | PASS | rules_cited=64 challenges=12 open=0 failures=0 |
+8
+| samples | PASS | transactions_checked=562 failures=0 |
+9
+10
+VERDICT: READY FOR SIGN-OFF
+Problems
+Terminal
+⏺ PLANNER DONE v5 · CHALLENGER DONE · QA DONE: READY FOR SIGN-OFF (4/4)
+⏺ Team shut down. Nine risks, 26 tests, 562 sampled transactions; one challenge is for you. Ready for your sign-off in outputs/review.md.
+Illustration, not a screenshot. Green files are new in this step. Your file names and counts may differ.
+Mark step 5.7 done
+Step 5.8
+Sign off
+The last human gate. The qa-reviewer's verdict tells you whether the pack is safe to sign; the challenger's points for you tell you what to think about before you do. Signing is a line in
+review.md
+, so the record stays with the pack.
+Prompt
+Paste into Claude Code
+Copy
+Show me outputs/review.md and the points marked for the auditor at the end of outputs/challenges.md. If the verdict is READY FOR SIGN-OFF, record my sign-off in review.md: name <your name>, today's date, decision sign off.
+What to expect
+Claude shows the four check results and the challenger's points for you, then fills in the sign-off block.
+What you should see after step 5.8
+procurement-audit-planner · Visual Studio Code
+Explorer
+⌄ procurement-audit-planner
+›
+.claude
+›
+.venv
+›
+data
+›
+outputs
+›
+scripts
+CLAUDE.md
+requirements.txt
+review.md
+1
+## Auditor sign-off
+2
+3
+Signed off by: <your name>
+4
+Date: 2026-09-27
+5
+Decision (sign off / return to the team): sign off
+6
+Comment:
+Problems
+Terminal
+⏺ Sign-off recorded in outputs/review.md. The pack is complete.
+Illustration, not a screenshot.  Your file names and counts may differ.
+Mark step 5.8 done
+What you have built so far
+11 of 11 files
+The system is complete: rules extracted and verified, every payment tested, past audits on record, a rated register you approved, and an audit planning pack planned, challenged, checked and signed off.
+✓ built
+The brief
+CLAUDE.md
+✓ built
+Testable rules
+outputs/rules.json
+✓ built
+Spend indicators
+outputs/analytics.json
+✓ built
+Audit history
+outputs/history.json
+✓ built
+Risk register
+outputs/risk-register.md
+✓ built
+Auditor decisions
+outputs/auditor-comments.md
+✓ built
+Planning memo
+outputs/planning-memo.md
+✓ built
+Risk-control matrix
+outputs/risk-control-matrix.md
+✓ built
+Audit program
+outputs/audit-program.md
+✓ built
+Challenges
+outputs/challenges.md
+✓ built
+QA review and sign-off
+outputs/review.md
+What you have built
+A system that turns a council's rulebook into testable rules, analyses the full spend population against them, folds in past audit history, produces a rated risk register that an auditor approves, and turns the approved risks into an audit program that a team of agents has challenged and checked.
+Every quote is verified against its PDF. Every figure comes from a named script. Every rating cites a rule, a metric or an audit item. Every sampled payment is at its row in the council's own workbook.
+Along the way you used the four ways Claude Code divides work: a skill for a repeatable method, sub-agents for long reading, a human gate for the decision only you can make, and an agent team for work that needs a second opinion.
+← The human gate
+Back to overview
+Built from public data published by West Berkshire Council. The system produces risk indicators to investigate, never findings of wrongdoing.
+
+FULL PROMPTS
+
+In outputs/auditor-comments.md, record approve for every risk whose Decision is still blank, then run the risk-assessor again to apply the decisions.
+
+---
+
+Enable agent teams for this project: add CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 to the env block of .claude/settings.json, creating the file if it does not exist, and show me the result.
+
+---
+
+---
+name: audit-program
+description: Turn the auditor-approved risks in outputs/risk-register.md into the audit planning pack: planning-memo.md, risk-control-matrix.md and audit-program.md (risk → expected control → test step → targeted sample, plus the PBC list), rendered and checked by build_pack.py from the planner's judgments in outputs/audit-plan.json. Loaded by the planner teammate at Phase 3.
+---
+
+# audit-program
+
+Produce the pack a human auditor will sign off. You judge which control
+each approved risk relies on, how to test it and what to sample; Python
+draws every sample, fills every figure and checks every trace. Write your
+judgments to `outputs/audit-plan.json`, then let `build_pack.py` render
+`planning-memo.md`, `risk-control-matrix.md` and `audit-program.md`.
+A plan the script cannot trace is not rendered, by design.
+
+## Inputs and outputs
+
+| | Path |
+| --- | --- |
+| Approved risks | `outputs/risk-register.md` (a revision) and `outputs/auditor-comments.md` (the decisions) |
+| Ratings | `outputs/risk-ratings.json` (scope flags, overrides, `sample_source` per risk) |
+| Rules | `outputs/rules.json` (rule IDs, clauses, quotes) |
+| Analytics | `outputs/analytics.json` (named metrics) and `outputs/analytics-full/*.csv` (the lists to sample from) |
+| Your judgments | `outputs/audit-plan.json` (you write this) |
+| Builder | `.claude/skills/audit-program/build_pack.py` |
+| Pack | `outputs/planning-memo.md`, `outputs/risk-control-matrix.md`, `outputs/audit-program.md`, `outputs/samples/T-*.csv`, `outputs/pack-figures.json` (script writes these) |
+
+Stop and report if any input is missing. Never edit the inputs.
+
+## Non-negotiable rules
+
+1. **Only approved risks.** Run `build_pack.py --gate` first. It fails
+   if any risk in the register has no decision, or if the register is
+   not a revision that applied the decisions. Plan exactly the risks it
+   lists as approved and in scope: no more, no fewer.
+2. **Every control and every test cites a rule** (`[rule:CPR-13]` or the
+   `cites` list); a test may also cite a metric (`metric:$.path`). The
+   builder rejects an uncited control or test.
+3. **You type no numbers from the data.** Figures in memo text are
+   `{{$.path}}` placeholders filled from analytics.json; a literal figure
+   in prose is a failure. Sample sizes and thresholds in a sample recipe
+   are the only digits you write.
+4. **Samples are recipes, not lists.** You say which `analytics-full`
+   file, which filter, which sort and how many; the builder draws them and
+   checks every transaction exists in `spend-clean.csv`. Never copy row
+   IDs or supplier names into the plan.
+5. **Every rule is accounted for.** A rule in `rules.json` is cited by a
+   risk, a control or a test, or listed in `rules_not_tested` with a
+   reason. The builder fails on any rule that is neither.
+6. **Indicator language.** Tests check controls against patterns; they
+   never presume an outcome. No officer, department or supplier is
+   characterised.
+7. **Nothing from outside the inputs.** No audit methodology from memory
+   that the rules do not support, no assumed council processes.
+
+## Procedure
+
+### Step 1: Confirm the gate and read the inputs
+
+```bash
+.venv/bin/python .claude/skills/audit-program/build_pack.py --gate
+```
+
+Then read the register (the approved risks' statements, evidence and
+proposed focus), the decisions and comments, `rules.json`, and
+`analytics.json`. Look at each `analytics-full` file you intend to sample
+from with `head -3` only: you need its column names, not its rows.
+
+### Step 2: For each approved risk, decide control, test and sample
+
+- **Expected control:** the control the Rules require that, if working,
+  would prevent or detect the pattern. Cite the rule(s). Name the owner
+  where the Rules name one (the approver or the officer responsible).
+- **Test step:** what fieldwork does with the sample: which documents to
+  obtain, what to compare, what a pass looks like. Cite the rule and the
+  metric the risk rests on. State the evidence to inspect.
+- **Sample recipe:** the file, filter, sort and size. Prefer the risk's
+  `sample_source` from the register. Size by score: 10 items for scores
+  of 9 and above, 5 for lower, all items when fewer exist. Use the general
+  procurement filter where a test splits by tag, unless the risk is about
+  placements. A document or enquiry test with no transactions uses
+  `{"kind": "none", "note": "..."}`.
+- **PBC items:** the documents the client must provide for that test.
+
+### Step 3: Account for every rule
+
+Group the rules no risk, control or test cites under a reason each, e.g.
+"definition or scope clause, not a control", "statutory tier; threshold
+parameter null", "governance step outside the spend data". Be honest: a
+rule that could be tested against the data and is not needs a reason the
+auditor would accept.
+
+### Step 4: Write `outputs/audit-plan.json`
+
+```json
+{
+  "generated_at": "YYYY-MM-DD",
+  "memo": {
+    "purpose": ["Why this audit, in indicator language."],
+    "background": ["{{$.population.rows_after_exclusions}} payments over £500 across {{$.population.months_covered}} months were tested against the Rules [metric:$.population.rows_after_exclusions]."],
+    "approach": ["How the risks were identified, rated, approved and turned into tests."],
+    "limitations": ["Carried from the register and the analytics caveats."]
+  },
+  "risks": [
+    {
+      "id": "R-02",
+      "objective": "What the audit must conclude about this risk.",
+      "controls": [
+        {"id": "C-02.1", "control": "Requirements are aggregated before the procurement route is chosen.", "cites": ["rule:CPR-13", "rule:CPR-14"], "owner": "Head of Service"}
+      ],
+      "tests": [
+        {
+          "id": "T-02.1", "control": "C-02.1",
+          "step": "For each sampled window, obtain the orders and quotes and confirm the requirement was treated as one purchase.",
+          "evidence": "Purchase orders, quotations, contract register entry",
+          "cites": ["rule:CPR-13", "metric:$.tests.split_purchases.per_threshold[1].headline_general_procurement.windows"],
+          "sample": {"kind": "groups", "source": "split-purchases-windows.csv", "where": {"dominant_tag": "general_procurement", "threshold": 25000}, "order_by": "window_total", "descending": true, "n": 10, "key": "window_id", "ids_column": "row_ids"},
+          "pbc": ["Purchase orders and quotations for the sampled windows"]
+        }
+      ]
+    }
+  ],
+  "rules_not_tested": [
+    {"reason": "definition or scope clause, not a control", "rule_ids": ["CPR-01"]}
+  ]
+}
+```
+
+Sample kinds: `rows` (file has `row_id`, e.g. `threshold-clustering.csv`,
+`duplicates-rows.csv`), `groups` (file has a `row_ids` list, e.g.
+`split-purchases-windows.csv`, `duplicates-groups.csv`), `suppliers`
+(supplier-level file such as `high-value-suppliers.csv`,
+`expired-notice-spend.csv`, `spend-vs-award.csv`; the builder pulls that
+supplier's payments from `spend-clean.csv`, largest first, `per_group_n`
+of them), `none`. Filters: `where` (equal or in a list), `where_min`,
+`where_max`, `where_not_match` (a column and a regex to exclude, e.g. an
+inter-authority payee pattern). `distinct_by` keeps one item per value of a
+column (e.g. one window per `supplier_norm`) after sorting.
+`exclude_drawn_in` lists earlier tests whose suppliers and rows this
+sample must skip, so two tests do not pull the same payments.
+
+### Step 5: Build and validate
+
+```bash
+.venv/bin/python .claude/skills/audit-program/build_pack.py
+```
+
+The builder checks the gate and the scope, resolves every citation and
+placeholder, draws every sample and verifies each transaction, checks
+that every control has a test and every rule is accounted for, then
+writes the three documents, `outputs/samples/T-*.csv` and
+`pack-figures.json` (every figure it computed, for the QA number check).
+Fix the plan until it reports no failures. Never edit the rendered files:
+the builder overwrites them.
+
+### Step 6: Report
+
+Under 300 words: risks in scope, controls and tests, sampled transactions
+and their value, rules cited and not tested, and anything the challenger
+or the auditor should look at first.
+
+## Not this skill's job
+
+- Rating or re-rating risks; the register is approved.
+- Fieldwork or conclusions; the pack plans tests, it does not perform them.
+- Challenging the plan or checking it; the challenger and qa-reviewer do that.
+
+
+---
+
+#!/usr/bin/env python3
+"""Validate outputs/audit-plan.json and render the audit planning pack.
+
+Usage: build_pack.py [PLAN_JSON] [--gate]
+       [--rules outputs/rules.json] [--analytics outputs/analytics.json]
+       [--ratings outputs/risk-ratings.json] [--register outputs/risk-register.md]
+       [--comments outputs/auditor-comments.md] [--full outputs/analytics-full]
+       [--out-dir outputs]
+
+--gate only checks the auditor gate: every risk in the register has a
+decision and the register is a revision that applied them. It prints the
+approved scope and exits 0, or names what is missing and exits 1.
+
+Otherwise the plan is validated and rendered:
+  scope      every planned risk is approved and in scope; every approved
+             in-scope risk is planned; nothing else.
+  citations  [rule:ID] and [metric:$.path] resolve; {{$.path}} placeholders
+             are filled from analytics.json; literal figures typed in prose
+             are failures.
+  samples    each test's sample recipe is drawn deterministically from a
+             file in analytics-full/ and every transaction it yields exists
+             in spend-clean.csv; the rows go to outputs/samples/<test>.csv.
+  trace      every rule in rules.json is cited by a risk, a control or a
+             test, or is listed in rules_not_tested with a reason; every
+             planned risk has at least one control and one test.
+Renders planning-memo.md, risk-control-matrix.md and audit-program.md
+(ending with the PBC list) and writes pack-figures.json, the list of every
+figure the builder itself computed, so the QA number check can trace them.
+Exit 0 when no failures; exit 1 otherwise.
+"""
+import argparse, csv, datetime, json, re, sys
+from collections import OrderedDict
+from pathlib import Path
+
+CITE_RE = re.compile(r"\[(rule|metric|history):((?:[^\[\]]|\[\d+\])+)\]")
+PH_RE = re.compile(r"\{\{(\$[^}]+)\}\}")
+NUM_RE = re.compile(r"£\s?\d|\b\d{3,}\b")
+HIGH_LABELS = {"high", "extreme", "very high"}
+GATE_DECISIONS = {"approve", "amend", "reject"}
+
+
+def jpath(obj, path):
+    """Resolve $.a.b[0].c against obj; return (found, value)."""
+    if not path.startswith("$"):
+        return False, None
+    cur = obj
+    for tok in re.findall(r"\.([^.\[\]]+)|\[(\d+)\]", path[1:]):
+        key, idx = tok
+        try:
+            cur = cur[int(idx)] if idx else cur[key]
+        except (KeyError, IndexError, TypeError):
+            return False, None
+    return True, cur
+
+
+def fmt(v):
+    if isinstance(v, bool) or v is None:
+        return str(v)
+    if isinstance(v, float):
+        return f"{v:,.2f}" if v != int(v) else f"{int(v):,}"
+    if isinstance(v, int):
+        return f"{v:,}"
+    return str(v)
+
+
+def gbp(v):
+    try:
+        return f"£{float(v):,.2f}"
+    except (TypeError, ValueError):
+        return str(v)
+
+
+def read_decisions(path):
+    """Decisions in auditor-comments.md: id -> {title, now, scope, decision, comment}."""
+    out = {"reviewer": "", "date": "", "rows": OrderedDict()}
+    if not path.exists():
+        return out
+    text = path.read_text(encoding="utf-8")
+    m = re.search(r"^Reviewer:[ \t]*(.*)$", text, re.M)
+    out["reviewer"] = m.group(1).strip() if m else ""
+    m = re.search(r"^Date:[ \t]*(.*)$", text, re.M)
+    out["date"] = m.group(1).strip() if m else ""
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) >= 6 and re.fullmatch(r"R-\d+", cells[0]):
+            out["rows"][cells[0]] = {"title": cells[1], "now": cells[2], "scope": cells[3],
+                                     "decision": cells[4].lower(), "comment": "|".join(cells[5:]).strip()}
+    return out
+
+
+def read_register(path):
+    """Summary rows of risk-register.md: id -> {title, L, I, score, label, band, scope}; plus header revision."""
+    rows, rev = OrderedDict(), None
+    if not path.exists():
+        return rows, rev
+    text = path.read_text(encoding="utf-8")
+    m = re.search(r"^\*Revision (\d+), following auditor comments", text, re.M)
+    rev = int(m.group(1)) if m else None
+    in_summary = False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            in_summary = line.strip() == "## Summary"
+            continue
+        if not in_summary:
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) >= 9 and re.fullmatch(r"R-\d+", cells[0]):
+            rows[cells[0]] = {"title": cells[1], "L": cells[2], "I": cells[3], "score": int(cells[4]),
+                              "label": cells[5], "band": cells[6], "scope": cells[8]}
+    return rows, rev
+
+
+def scope_check(reg, rev, dec, ratings, fails):
+    """The approved scope, or failures explaining why the gate is not closed."""
+    if not reg:
+        fails.append("gate: risk-register.md has no summary table")
+        return OrderedDict(), OrderedDict()
+    undecided = [rid for rid in reg if dec["rows"].get(rid, {}).get("decision", "") == ""]
+    if undecided:
+        fails.append(f"gate not closed: no decision for {', '.join(undecided)} in auditor-comments.md")
+    bad = [rid for rid, v in dec["rows"].items() if v["decision"] and v["decision"] not in GATE_DECISIONS]
+    if bad:
+        fails.append(f"gate: decision not approve/amend/reject for {', '.join(bad)}")
+    if rev is None:
+        fails.append("gate: the register is not a revision; re-run the risk-assessor so the decisions are applied")
+    rat = {r["id"]: r for r in ratings.get("risks", [])}
+    excl = {x.get("id"): x for x in ratings.get("excluded", []) if x.get("id")}
+    approved, out_of_scope = OrderedDict(), OrderedDict()
+    for rid, v in dec["rows"].items():
+        d = v["decision"]
+        if d in ("approve", "amend"):
+            if rid not in reg or rid not in rat:
+                fails.append(f"gate: {rid} is {d}d but not in the current register")
+                continue
+            if rat[rid].get("recommend_in_scope", True):
+                approved[rid] = {**reg[rid], "decision": d, "comment": v["comment"],
+                                 "override": bool(rat[rid].get("auditor_override")),
+                                 "sample_source": rat[rid].get("sample_source", "")}
+            else:
+                out_of_scope[rid] = {**reg[rid], "decision": d, "comment": v["comment"],
+                                     "reason": "rated, recommended out of scope; approved as rated"}
+        elif d == "reject":
+            if rid in reg:
+                fails.append(f"gate: {rid} was rejected but is still in the register; re-run the risk-assessor")
+            reason = (excl.get(rid) or {}).get("reason") or v["comment"] or "rejected at the gate"
+            out_of_scope[rid] = {"title": v["title"], "score": None, "label": "", "band": "",
+                                 "decision": d, "comment": v["comment"], "reason": reason}
+    return approved, out_of_scope
+
+
+def load_csv(path):
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def to_num(s):
+    try:
+        return float(s)
+    except (TypeError, ValueError):
+        return None
+
+
+def draw_sample(spec, tid, full, spend_by_id, fails, drawn=None):
+    """Apply a sample recipe to a file in analytics-full/. Returns (rows, describe).
+    drawn: {test id: {"suppliers": set, "row_ids": set}} for tests already sampled, for exclude_drawn_in."""
+    drawn = drawn or {}
+    kind = spec.get("kind", "rows")
+    if kind == "none":
+        return [], spec.get("note", "no transaction sample; document or enquiry test")
+    src = full / spec.get("source", "")
+    if not src.exists():
+        fails.append(f"{tid}: sample source not found {spec.get('source')}")
+        return [], ""
+    rows = load_csv(src)
+    where = spec.get("where") or {}
+    for col, want in where.items():
+        if rows and col not in rows[0]:
+            fails.append(f"{tid}: sample where-column {col!r} not in {spec['source']}")
+            return [], ""
+        wants = want if isinstance(want, list) else [want]
+        wants = [str(w) for w in wants] + [fmt(w) for w in wants if isinstance(w, (int, float))]
+        rows = [r for r in rows if r[col] in wants or (to_num(r[col]) is not None and any(to_num(r[col]) == to_num(w) for w in wants))]
+    for col, lo in (spec.get("where_min") or {}).items():
+        rows = [r for r in rows if to_num(r.get(col)) is not None and to_num(r[col]) >= float(lo)]
+    for col, hi in (spec.get("where_max") or {}).items():
+        rows = [r for r in rows if to_num(r.get(col)) is not None and to_num(r[col]) <= float(hi)]
+    for col, pat in (spec.get("where_not_match") or {}).items():  # drop rows whose column matches a regex
+        try:
+            rx = re.compile(pat, re.I)
+        except re.error:
+            fails.append(f"{tid}: where_not_match pattern for {col!r} is not a valid regex"); return [], ""
+        rows = [r for r in rows if not rx.search(r.get(col, ""))]
+    excl_sup, excl_ids = set(), set()
+    for other in spec.get("exclude_drawn_in") or []:  # skip what an earlier test already pulled
+        if other not in drawn:
+            fails.append(f"{tid}: exclude_drawn_in names {other}, which has not been sampled before this test"); return [], ""
+        excl_sup |= drawn[other]["suppliers"]; excl_ids |= drawn[other]["row_ids"]
+    if excl_sup and rows and "supplier_norm" in rows[0]:
+        rows = [r for r in rows if r.get("supplier_norm") not in excl_sup]
+    order = spec.get("order_by")
+    if order:
+        if rows and order not in rows[0]:
+            fails.append(f"{tid}: sample order_by column {order!r} not in {spec['source']}")
+            return [], ""
+        rows.sort(key=lambda r: (to_num(r[order]) if to_num(r[order]) is not None else r[order]),
+                  reverse=bool(spec.get("descending", True)))
+    if spec.get("distinct_by"):  # one item per value of a column, first after sorting
+        col, seen, uniq = spec["distinct_by"], set(), []
+        if rows and col not in rows[0]:
+            fails.append(f"{tid}: distinct_by column {col!r} not in {spec['source']}"); return [], ""
+        for r in rows:
+            if r[col] not in seen:
+                seen.add(r[col]); uniq.append(r)
+        rows = uniq
+    n = int(spec.get("n", 10))
+    picked = rows[:n]
+    per = int(spec.get("per_group_n", 0) or 0)
+    out = []
+    for i, r in enumerate(picked, 1):
+        if kind == "rows":
+            ids = [r.get("row_id", "")]
+            key = r.get("row_id", "")
+        elif kind == "groups":
+            ids = [x for x in re.split(r"[;,]\s*", r.get(spec.get("ids_column", "row_ids"), "")) if x]
+            if per:  # largest payments of the group first
+                ids.sort(key=lambda x: -(to_num((spend_by_id.get(x) or {}).get("Net amount")) or 0))
+                ids = ids[:per]
+            key = r.get(spec.get("key", "window_id" if "window_id" in r else "group_id"), str(i))
+        elif kind == "suppliers":
+            sup = r.get("supplier_norm", "")
+            pay = [s for s in spend_by_id.values() if s.get("supplier_norm") == sup]
+            pay.sort(key=lambda s: -(to_num(s.get("Net amount")) or 0))
+            ids = [s["row_id"] for s in (pay[:per] if per else pay)]
+            key = sup
+        else:
+            fails.append(f"{tid}: unknown sample kind {kind!r}")
+            return [], ""
+        for rid in ids:
+            if rid in excl_ids:
+                continue
+            s = spend_by_id.get(rid)
+            if not s:
+                fails.append(f"{tid}: sampled row_id {rid} not found in spend-clean.csv")
+                continue
+            out.append({"test": tid, "item": i, "group": key, "row_id": rid, "source_file": s.get("source_file", ""),
+                        "sheet_row": s.get("sheet_row", ""), "pay_date": s.get("pay_date", ""),
+                        "supplier": s.get("Supplier name", ""), "amount": s.get("Net amount", ""),
+                        "service": s.get("Service", ""), "narrative": s.get("Narrative", "")})
+    parts = [f"{len(picked)} {'item' if len(picked) == 1 else 'items'} from `{spec['source']}`"]
+    if where or spec.get("where_min") or spec.get("where_max"):
+        conds = [f"{c} = {v}" for c, v in where.items()] + [f"{c} ≥ {v}" for c, v in (spec.get("where_min") or {}).items()] \
+              + [f"{c} ≤ {v}" for c, v in (spec.get("where_max") or {}).items()]
+        parts.append("where " + ", ".join(conds))
+    if order:
+        parts.append(f"largest {order} first" if spec.get("descending", True) else f"smallest {order} first")
+    if kind == "suppliers":
+        parts.append(f"{'all' if not per else per} payments per supplier")
+    if kind == "groups" and per:
+        parts.append(f"largest {per} payments per item")
+    if spec.get("distinct_by"):
+        parts.append(f"one item per {spec['distinct_by']}")
+    if spec.get("where_not_match"):
+        parts.append("excluding " + ", ".join(f"{c} matching /{pat}/" for c, pat in spec["where_not_match"].items()))
+    if spec.get("exclude_drawn_in"):
+        parts.append("excluding suppliers and rows already drawn in " + ", ".join(spec["exclude_drawn_in"]))
+    if len(rows) < n:
+        parts.append(f"(only {len(rows)} available)")
+    return out, ", ".join(parts) + f"; {len(out)} transactions"
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("plan", nargs="?", default="outputs/audit-plan.json")
+    ap.add_argument("--gate", action="store_true", help="only check the auditor gate and print the scope")
+    ap.add_argument("--rules", default="outputs/rules.json")
+    ap.add_argument("--analytics", default="outputs/analytics.json")
+    ap.add_argument("--ratings", default="outputs/risk-ratings.json")
+    ap.add_argument("--register", default="outputs/risk-register.md")
+    ap.add_argument("--comments", default="outputs/auditor-comments.md")
+    ap.add_argument("--full", default="outputs/analytics-full")
+    ap.add_argument("--out-dir", default="outputs")
+    a = ap.parse_args()
+
+    fails, warns, figures = [], [], OrderedDict()
+    rules = json.loads(Path(a.rules).read_text())
+    an = json.loads(Path(a.analytics).read_text())
+    ratings = json.loads(Path(a.ratings).read_text())
+    rule_ids = OrderedDict((r["rule_id"], r) for r in rules["rules"])
+    reg, rev = read_register(Path(a.register))
+    dec = read_decisions(Path(a.comments))
+    approved, out_of_scope = scope_check(reg, rev, dec, ratings, fails)
+
+    if a.gate:
+        for f in fails: print("FAIL ", f)
+        if not fails:
+            print(f"gate closed: register revision {rev}, {len(dec['rows'])} decisions by {dec['reviewer'] or 'unnamed reviewer'} dated {dec['date'] or 'undated'}")
+            print("approved, in scope: " + ", ".join(f"{rid} ({v['score']})" for rid, v in approved.items()))
+            print("not in scope: " + (", ".join(f"{rid} ({v['decision']})" for rid, v in out_of_scope.items()) or "none"))
+        return 1 if fails else 0
+
+    P = json.loads(Path(a.plan).read_text())
+    full = Path(a.full)
+    spend_by_id = {r["row_id"]: r for r in load_csv(full / "spend-clean.csv")} if (full / "spend-clean.csv").exists() else {}
+    if not spend_by_id:
+        fails.append(f"{full}/spend-clean.csv missing: samples cannot be verified")
+
+    # ---- citations and placeholders
+    cited_rules = OrderedDict()   # rule -> set of places
+
+    def resolve(text, where):
+        ok = 0
+        for kind, ref in CITE_RE.findall(text or ""):
+            ref = ref.strip()
+            if kind == "rule":
+                if ref in rule_ids:
+                    ok += 1; cited_rules.setdefault(ref, set()).add(where.split(".")[0])
+                else:
+                    fails.append(f"{where}: unknown rule {ref}")
+            elif kind == "metric":
+                found, val = jpath(an, ref)
+                if found and not isinstance(val, (dict, list)): ok += 1
+                elif found: fails.append(f"{where}: metric {ref} is not a scalar")
+                else: fails.append(f"{where}: metric path not found {ref}")
+            else:
+                ok += 1  # history items are the register's business; the pack cites the register by risk id
+        return ok
+
+    def fill(text, where):
+        def sub(m):
+            found, val = jpath(an, m.group(1))
+            if not found or isinstance(val, (dict, list)):
+                fails.append(f"{where}: placeholder not resolvable {m.group(1)}")
+                return "«unresolved»"
+            return fmt(val)
+        out = PH_RE.sub(sub, text or "")
+        stripped = CITE_RE.sub("", PH_RE.sub("", text or ""))
+        if NUM_RE.search(stripped):
+            fails.append(f"{where}: literal figure typed in prose; use a {{{{metric}}}} placeholder: {stripped[:70]!r}")
+        return out
+
+    def strip_cites(text):
+        return CITE_RE.sub("", text or "").replace("  ", " ").strip()
+
+    def cite_list(cites, where):
+        for c in cites or []:
+            resolve(f"[{c}]", where)
+        return ", ".join(c.split(":", 1)[1] if c.startswith("rule:") else c for c in cites or [])
+
+    # ---- scope vs plan
+    planned = OrderedDict((r["id"], r) for r in P.get("risks", []))
+    for rid in planned:
+        if rid not in approved:
+            fails.append(f"scope: {rid} is planned but is not an approved, in-scope risk")
+    for rid in approved:
+        if rid not in planned:
+            fails.append(f"scope: {rid} is approved and in scope but has no plan entry")
+    # rules cited by the register's rated risks count as traced to a risk
+    for r in ratings.get("risks", []):
+        for kind, ref in CITE_RE.findall(json.dumps(r)):
+            if kind == "rule" and ref in rule_ids:
+                cited_rules.setdefault(ref, set()).add(r["id"])
+
+    # ---- controls, tests, samples
+    samples_dir = Path(a.out_dir) / "samples"
+    samples_dir.mkdir(parents=True, exist_ok=True)
+    for old in samples_dir.glob("T-*.csv"):
+        old.unlink()
+    all_samples, pbc, drawn = [], OrderedDict(), OrderedDict()
+    n_controls = n_tests = 0
+    for rid, r in planned.items():
+        controls = r.get("controls") or []
+        tests = r.get("tests") or []
+        if not controls: fails.append(f"{rid}: no expected control")
+        if not tests: fails.append(f"{rid}: no test step")
+        cids = set()
+        for c in controls:
+            n_controls += 1
+            cids.add(c.get("id"))
+            if not c.get("cites"): fails.append(f"{rid}.{c.get('id')}: control cites no rule")
+            c["_cites"] = cite_list(c.get("cites"), f"{rid}.{c.get('id')}")
+            c["_text"] = fill(c.get("control", ""), f"{rid}.{c.get('id')}")
+        tested = set()
+        for t in tests:
+            n_tests += 1
+            tid = t.get("id", "?")
+            if t.get("control") not in cids:
+                fails.append(f"{rid}.{tid}: test refers to control {t.get('control')!r} which is not defined for this risk")
+            tested.add(t.get("control"))
+            if not t.get("cites"): fails.append(f"{rid}.{tid}: test cites no rule or metric")
+            t["_cites"] = cite_list(t.get("cites"), f"{rid}.{tid}")
+            t["_step"] = fill(t.get("step", ""), f"{rid}.{tid}")
+            t["_evidence"] = fill(t.get("evidence", ""), f"{rid}.{tid}")
+            spec = t.get("sample") or {"kind": "none", "note": "no sample specified"}
+            rows, desc = draw_sample(spec, tid, full, spend_by_id, fails, drawn)
+            t["_rows"], t["_desc"] = rows, desc
+            drawn[tid] = {"suppliers": {(spend_by_id.get(s["row_id"]) or {}).get("supplier_norm") for s in rows},
+                          "row_ids": {s["row_id"] for s in rows}}
+            if spec.get("kind", "rows") != "none" and not rows:
+                fails.append(f"{rid}.{tid}: sample recipe yielded no transactions")
+            if rows:
+                with open(samples_dir / f"{tid}.csv", "w", newline="", encoding="utf-8") as f:
+                    w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+                all_samples += rows
+            for item in t.get("pbc") or []:
+                pbc.setdefault(rid, OrderedDict()).setdefault(item, []).append(tid)
+        for c in controls:
+            if c.get("id") not in tested:
+                fails.append(f"{rid}.{c.get('id')}: control has no test")
+
+    # ---- rule coverage
+    not_tested = OrderedDict()
+    for grp in P.get("rules_not_tested") or []:
+        if not grp.get("reason"):
+            fails.append("rules_not_tested: a group has no reason")
+        for x in grp.get("rule_ids") or []:
+            if x not in rule_ids: fails.append(f"rules_not_tested: unknown rule {x}")
+            not_tested[x] = grp.get("reason", "")
+    uncovered = [x for x in rule_ids if x not in cited_rules and x not in not_tested]
+    if uncovered:
+        fails.append(f"trace: {len(uncovered)} rules neither cited by a risk, control or test nor listed as not tested: {', '.join(uncovered[:12])}{'…' if len(uncovered) > 12 else ''}")
+    both = [x for x in not_tested if x in cited_rules]
+    if both:
+        warns.append(f"rules listed as not tested but also cited: {', '.join(both)}")
+
+    # ---- memo text
+    M = P.get("memo") or {}
+    memo = {k: [fill(p, f"memo.{k}") for p in (M.get(k) if isinstance(M.get(k), list) else [M.get(k, "")])] for k in ("purpose", "background", "approach", "limitations")}
+    for k in ("purpose", "background", "approach"):
+        if not any(s.strip() for s in memo[k]):
+            fails.append(f"memo.{k} is empty")
+
+    # ---- figures the builder computed (for the QA number check)
+    # Sample recipes are the planner's only permitted digits: their values are recorded here so the number check can trace them.
+    recipe_values = set()
+    for r in planned.values():
+        for t in r.get("tests") or []:
+            spec = t.get("sample") or {}
+            for key in ("n", "per_group_n"):
+                if to_num(spec.get(key)) is not None: recipe_values.add(to_num(spec.get(key)))
+            for cond in ("where", "where_min", "where_max"):
+                for v in (spec.get(cond) or {}).values():
+                    for x in (v if isinstance(v, list) else [v]):
+                        if to_num(x) is not None: recipe_values.add(to_num(x))
+    figures["sample_recipe_values"] = sorted(recipe_values)
+    figures.update({
+        "approved_in_scope": len(approved), "not_in_scope": len(out_of_scope), "register_risks": len(reg),
+        "controls": n_controls, "tests": n_tests, "sampled_transactions": len(all_samples),
+        "sampled_gbp": round(sum(to_num(s["amount"]) or 0 for s in all_samples), 2),
+        "rules_total": len(rule_ids), "rules_cited": len([x for x in rule_ids if x in cited_rules]),
+        "rules_not_tested": len([x for x in rule_ids if x not in cited_rules and x in not_tested]),
+        "register_revision": rev, "decisions": len(dec["rows"]),
+        "pbc_items": sum(len(v) for v in pbc.values()),
+    })
+
+    # ---- render
+    today = P.get("generated_at") or str(datetime.date.today())
+    who = f" by {dec['reviewer']}" if dec["reviewer"] else ""
+    when = f" dated {dec['date']}" if dec["date"] else ""
+    head_note = (f"*Generated {today} by `build_pack.py` from `audit-plan.json`, `risk-register.md` (revision {rev}), "
+                 f"`auditor-comments.md`{who}{when}, `rules.json` and `analytics.json`. Status: DRAFT for challenge, QA review and auditor sign-off.*\n")
+    indic = ("**Indicators, not findings.** Every test below checks a control against a pattern in public data. "
+             "Nothing here asserts wrongdoing by the council, a department, an officer or a supplier.\n")
+
+    def risk_line(rid, v):
+        sc = f"{v['score']} ({v['label']}; {v['band']})" if v.get("score") is not None else "not rated"
+        return f"{rid}: {v['title']} [{sc}]"
+
+    # planning memo
+    md = ["# Procurement audit: planning memo\n", head_note, indic, "## Purpose\n", *memo["purpose"], "\n## Background\n", *memo["background"]]
+    md.append("\n## Scope\n")
+    n_out = figures['not_in_scope']
+    md.append(f"The register lists {figures['register_risks']} rated risks. The auditor recorded {figures['decisions']} decisions{who}{when}: "
+              f"{figures['approved_in_scope']} risks are approved and in scope, and {n_out} {'is' if n_out == 1 else 'are'} not.\n")
+    md.append("| ID | Risk | Score | Band | Decision | Auditor comment |\n|---|---|---|---|---|---|")
+    for rid, v in approved.items():
+        note = v["comment"] + (" (auditor override applied)" if v["override"] else "")
+        md.append(f"| {rid} | {v['title']} | {v['score']} | {v['band']} | {v['decision']} | {note} |")
+    if out_of_scope:
+        md.append("\n**Not in scope**\n")
+        for rid, v in out_of_scope.items():
+            md.append(f"- {rid}: {v['title']}: {v['decision']}; {v['reason']}")
+    md += ["\n## Approach\n", *memo["approach"]]
+    md.append(f"\nThe programme holds {figures['controls']} expected controls and {figures['tests']} test steps, with {figures['sampled_transactions']} "
+              f"sampled transactions worth £{figures['sampled_gbp']:,.2f}, each traceable to its row in the council's published workbooks "
+              f"(see `audit-program.md` and `outputs/samples/`).")
+    md.append("\n## Rules coverage\n")
+    md.append(f"{figures['rules_cited']} of {figures['rules_total']} rules in `rules.json` are cited by a risk, a control or a test. "
+              f"The remaining {figures['rules_not_tested']} are not tested in this audit, for these reasons:\n")
+    by_reason = OrderedDict()
+    for x, why in not_tested.items():
+        if x not in cited_rules: by_reason.setdefault(why, []).append(x)
+    for why, xs in by_reason.items():
+        md.append(f"- {why}: {', '.join(xs)}")
+    if memo["limitations"] and any(s.strip() for s in memo["limitations"]):
+        md.append("\n## Limitations\n")
+        for l in memo["limitations"]:
+            if l.strip(): md.append(f"- {l}")
+    md.append("\n## Review and sign-off\n")
+    md.append("The challenger's points and their status are in `challenges.md`; points marked *for the auditor* need a decision at sign-off. "
+              "The QA reviewer's checks and verdict are in `review.md`, which ends with the sign-off block.")
+    Path(a.out_dir, "planning-memo.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+
+    # risk-control matrix
+    md = ["# Risk-control matrix\n", head_note, indic]
+    md.append("| Risk | Score | Expected control | Rules | Tests |\n|---|---|---|---|---|")
+    for rid, r in planned.items():
+        v = approved.get(rid, {})
+        for c in r.get("controls") or []:
+            tests = ", ".join(t.get("id", "?") for t in r.get("tests") or [] if t.get("control") == c.get("id"))
+            md.append(f"| {rid}: {v.get('title', '')} | {v.get('score', '')} ({v.get('band', '')}) | {c.get('id')}: {c['_text']} | {c['_cites']} | {tests} |")
+    Path(a.out_dir, "risk-control-matrix.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+
+    # audit program
+    md = ["# Audit program\n", head_note, indic]
+    md.append(f"{figures['approved_in_scope']} risks in scope, {figures['controls']} controls, {figures['tests']} tests, "
+              f"{figures['sampled_transactions']} sampled transactions. Samples are drawn by the builder from `analytics-full/` "
+              f"by the recipe stated under each test, and every transaction is listed with its workbook row.\n")
+    for rid, r in planned.items():
+        v = approved.get(rid, {})
+        md.append(f"\n## {risk_line(rid, v)}\n")
+        if r.get("objective"): md.append(f"**Audit objective.** {fill(r['objective'], f'{rid}.objective')}\n")
+        for c in r.get("controls") or []:
+            md.append(f"**{c.get('id')}. Expected control.** {c['_text']} [{c['_cites']}]" + (f" Owner: {c['owner']}." if c.get("owner") else "") + "\n")
+            for t in r.get("tests") or []:
+                if t.get("control") != c.get("id"): continue
+                md.append(f"**{t.get('id')}. Test.** {t['_step']} [{t['_cites']}]  \n**Evidence to inspect:** {t['_evidence']}  \n**Sample:** {t['_desc']}\n")
+                if t["_rows"]:
+                    md.append("| # | Row ID | Date | Supplier | Amount | Service |\n|---|---|---|---|---|---|")
+                    for s in t["_rows"]:
+                        md.append(f"| {s['item']} | `{s['row_id']}` | {s['pay_date']} | {s['supplier']} | {gbp(s['amount'])} | {s['service']} |")
+                    md.append("")
+    md.append("\n## Prepared-by-client (PBC) request list\n")
+    md.append("Derived from the test steps above. Each item names the tests that need it.\n")
+    md.append("| # | Risk | Item requested | For tests |\n|---|---|---|---|")
+    n = 0
+    for rid, items in pbc.items():
+        for item, tids in items.items():
+            n += 1
+            md.append(f"| {n} | {rid} | {item} | {', '.join(tids)} |")
+    Path(a.out_dir, "audit-program.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+
+    Path(a.out_dir, "pack-figures.json").write_text(json.dumps({"generated_at": today, "figures": figures}, indent=2) + "\n", encoding="utf-8")
+
+    for w in warns: print("WARN ", w)
+    for f in fails: print("FAIL ", f)
+    print(f"\nscope: {len(approved)} approved risks planned, {len(out_of_scope)} not in scope; controls: {n_controls}; tests: {n_tests}; "
+          f"sampled transactions: {len(all_samples)}; rules cited: {figures['rules_cited']}/{figures['rules_total']}; warnings: {len(warns)}; failures: {len(fails)}")
+    for name in ("planning-memo.md", "risk-control-matrix.md", "audit-program.md", "pack-figures.json"):
+        print(f"written: {Path(a.out_dir, name)}")
+    print(f"written: {samples_dir}/ ({len([p for p in samples_dir.glob('T-*.csv')])} files)")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+---
+
+Build the audit-program skill described in CLAUDE.md. First look at outputs/risk-register.md, outputs/auditor-comments.md, outputs/risk-ratings.json and the column names of every file in outputs/analytics-full (head -3 only). Design:
+- The planner writes its judgments to outputs/audit-plan.json: per approved risk, expected controls that cite rules, test steps that cite a rule or a metric, a sample recipe (file in analytics-full, filter, sort, how many), and the PBC items each test needs. Memo text uses {{$.path}} placeholders for every figure.
+- build_pack.py, next to SKILL.md, computes the approved scope from auditor-comments.md and risk-ratings.json and fails if any register risk is undecided or the register is not a revision; a --gate flag runs only that check.
+- It resolves every citation, draws every sample deterministically, verifies each transaction exists in spend-clean.csv and writes it to outputs/samples/<test>.csv, checks every control has a test, and checks every rule in rules.json is cited by a risk, control or test or listed as not tested with a reason.
+- It renders planning-memo.md, risk-control-matrix.md and audit-program.md (ending with the PBC list) and writes pack-figures.json listing every figure it computed itself.
+- Size samples by score and use indicator language throughout.
+
+Test the builder on a fixture with two risks and confirm it fails on a missing risk, an uncited control and an unaccounted rule.
+
+---
+
+Create an agent called planner for the Phase 3 agent team in CLAUDE.md. It follows the audit-program skill: runs the gate check, writes outputs/audit-plan.json for the approved risks only, and runs build_pack.py until there are no failures. It owns only audit-plan.json; the builder writes the pack. Give it a message protocol for the team: it announces "PACK READY vN" to the challenger and the qa-reviewer by name, answers each "CHALLENGE #n" with "RESPONSE #n: accepted / declined / for the auditor", fixes each "QA vN: FAIL", rebuilds, and ends with "PLANNER DONE vN". Two challenge rounds at most. It never re-rates a risk, never changes scope, and never edits the register, the inputs, the skill or the builder.
+
+---
+
+---
+name: planner
+description: Agent-team member that owns the audit planning pack. Follows the audit-program skill to turn the auditor-approved risks into outputs/planning-memo.md, outputs/risk-control-matrix.md and outputs/audit-program.md, via outputs/audit-plan.json and build_pack.py. Responds to the challenger's points and the qa-reviewer's failures by revising the plan. Spawned by the lead as a teammate at Phase 3, after the auditor gate is closed.
+tools: Bash, Read, Write, Edit, Glob, Grep
+memory: project
+---
+
+You are the planner on a three-member agent team (planner, challenger,
+qa-reviewer) that produces the audit planning pack for a procurement
+audit (see CLAUDE.md, Phase 3). You own three documents and the plan
+behind them. The other two review your work; you do not review theirs.
+
+**Your method is the audit-program skill.** Read
+`.claude/skills/audit-program/SKILL.md` first and follow it exactly: the
+gate check, the plan-file format, the sample recipes, the rule coverage
+rule and the build-and-validate loop. This file only adds what the skill
+leaves to the teammate.
+
+## Files
+
+| | Path |
+| --- | --- |
+| You write | `outputs/audit-plan.json` only |
+| The builder writes | `outputs/planning-memo.md`, `outputs/risk-control-matrix.md`, `outputs/audit-program.md`, `outputs/samples/`, `outputs/pack-figures.json` |
+| You never write | `outputs/challenges.md` (challenger), `outputs/review.md` (qa-reviewer), the register, the ratings, the decisions, the inputs, the skill, the builder |
+
+## Working with the team
+
+Messages are the team's protocol. Keep them short, name the version, and
+never paste data into them.
+
+1. **Pack ready.** When the builder reports no failures, message the
+   challenger and the qa-reviewer: `PACK READY v1` plus the builder's
+   summary line. Do the same for each later version (v2, v3).
+2. **Challenges.** The challenger sends `CHALLENGE #n` messages, each
+   with a type, a risk, evidence and an ask. For each one reply
+   `RESPONSE #n: accepted` (say what you changed, then rebuild and send
+   the next PACK READY) or `RESPONSE #n: declined` with the reason. You
+   may decline; you may not ignore. Points typed *rating* or *scope* are
+   about decisions the auditor approved: you cannot change those, so
+   reply `RESPONSE #n: for the auditor` and leave the plan as it is.
+3. **QA failures.** The qa-reviewer sends `QA vN: FAIL` messages naming
+   the check and the items. Fix the plan (never the rendered files or the
+   check scripts), rebuild, and send the next PACK READY. If a failure is
+   in an input you do not own, say so to the lead.
+4. **Rounds.** At most two rounds of challenges. After your response to
+   the second round, tell the lead `PLANNER DONE vN` with a five-line
+   summary: risks, controls, tests, sampled transactions, open points.
+5. **Blocked.** If the gate is not closed or an input is missing, tell
+   the lead `PLANNER BLOCKED` with the builder's message and stop.
+
+## Additional rules
+
+- Read `analytics-full` files with `head -3` only. Sample recipes are
+  yours; the transactions are the builder's.
+- Every figure in the memo is a placeholder; every control and test cites
+  a rule. The builder enforces both; do not work around it.
+- Keep the memo short: an auditor reads it in ten minutes. Under 900
+  words of your own text across the memo sections.
+- Indicator language throughout.
+
+## Memory
+
+Persistent project memory holds **how to do the work** only: builder
+pitfalls, sample kinds that fit each analytics-full file, wording the
+challenger or the qa-reviewer rejected. Never store figures, supplier
+names, risks, decisions or challenge outcomes; the files are the record.
+Read `MEMORY.md` at the start; save at the end only what a future run
+would otherwise rediscover; keep it under 150 lines.
+
+## Not this teammate's job
+
+- Rating risks or changing scope; the auditor decided.
+- Writing challenges.md or review.md.
+- Running the QA checks; the qa-reviewer runs them, you fix what they find.
+
+
+---
+
+Create an agent called challenger for the Phase 3 agent team in CLAUDE.md. It reads the register, auditor-comments.md, risk-ratings.json, analytics.json, history.json, rules.json and the planner's pack, and owns only outputs/challenges.md. It waits for the planner's "PACK READY v1", then sends at most eight "CHALLENGE #n [type] R-xx" messages, each with a citation and a specific ask. Allowed types: rating and scope (for the auditor, since the decisions are approved), sample, control, test, coverage (for the planner). It records each challenge, the planner's response and a status (open, resolved, declined, for the auditor) in a table, verifies accepted changes in the rebuilt pack, runs one more round of at most four, closes every row, and ends with "CHALLENGER DONE". It never reads data/ or analytics-full/, never edits the plan or the pack, and uses indicator language only.
+
+---
+
+---
+name: challenger
+description: Agent-team member that challenges the audit planning pack. Reads the approved register, the analytics and history summaries and the planner's pack, and writes outputs/challenges.md: each weak spot with its evidence, the ask sent to the planner, the planner's response and a status. Spawned by the lead as a teammate at Phase 3, alongside the planner and the qa-reviewer.
+tools: Read, Write, Glob, Grep
+memory: project
+---
+
+You are the challenger on a three-member agent team (planner, challenger,
+qa-reviewer) that produces the audit planning pack (see CLAUDE.md,
+Phase 3). Your job is to find where the plan is weaker than the evidence
+and make the planner answer for it. You own one file and change nothing
+else.
+
+## Files
+
+| | Path |
+| --- | --- |
+| You write | `outputs/challenges.md` only |
+| You read | `outputs/risk-register.md`, `outputs/auditor-comments.md`, `outputs/risk-ratings.json`, `outputs/analytics.json`, `outputs/history.json`, `outputs/rules.json`, `outputs/audit-plan.json`, `outputs/planning-memo.md`, `outputs/risk-control-matrix.md`, `outputs/audit-program.md` |
+| You never write | anything the planner or the qa-reviewer owns; the register; the inputs |
+
+Never read `data/` or `outputs/analytics-full/`; the summaries are your
+evidence, and every challenge must cite them.
+
+## What counts as a challenge
+
+Each challenge is one of these types, and nothing else:
+
+| Type | What you look for | Who can act |
+| --- | --- | --- |
+| `rating` | A risk rated low or moderate while a named metric in analytics.json shows a strong signal (a headline count or £ total that is large against the population), or a rating that ignores an adverse history item | the auditor (the rating was approved) |
+| `scope` | A risk left out of scope, or excluded from the register, on a theme where history.json records a Limited, Weak or Unsatisfactory opinion | the auditor |
+| `sample` | A sample too small for the score, drawn from the wrong list, filtered so the signal is missed, or a test with no sample where the data offers one | the planner |
+| `control` | A rule the risk cites with no control in the matrix, or a control with no test that would show whether it worked | the planner |
+| `test` | A test step that would not detect the pattern the risk describes, or whose evidence could not show a pass or a fail | the planner |
+| `coverage` | A rule listed as not tested with a reason that does not hold, or a limitation in the register the memo does not carry | the planner |
+
+Every challenge cites at least one of: a rule ID, a metric path in
+analytics.json, a history item ID, or a test or control ID in the pack.
+No citation, no challenge. Indicator language only: you challenge the
+plan, never the council.
+
+## Working with the team
+
+1. Wait for the planner's `PACK READY v1` message, then read the pack.
+2. Send each challenge to the planner as one message:
+   `CHALLENGE #n [type] R-xx: <one sentence>. Evidence: <citations>. Ask: <the specific change>.`
+   Send at most eight in round one. Order them by how much they would
+   change the audit.
+3. Record each in `outputs/challenges.md` as you send it, in this table:
+
+   | # | Type | Risk | Challenge | Evidence | Ask | Response | Status |
+
+   Status is `open`, `resolved` (the planner accepted and the next PACK
+   READY reflects it; check that it does), `declined` (the planner gave a
+   reason you accept), `for the auditor` (rating or scope, or a decline
+   you do not accept). Quote the planner's response in the Response cell.
+4. When the next PACK READY arrives, verify each accepted change in the
+   rebuilt pack, update the statuses, and send round two: at most four
+   new or repeated challenges. After the planner's second responses,
+   close every row: nothing is left `open`.
+5. Tell the lead `CHALLENGER DONE`: counts by status, and the rows marked
+   *for the auditor* in one line each.
+
+## The file
+
+`outputs/challenges.md` starts with a heading, the pack version(s)
+reviewed, the date, and one paragraph on how you read the pack; then the
+table; then a short list "For the auditor at sign-off" repeating the rows
+with that status. Keep it under 700 words outside the table.
+
+## Memory
+
+Persistent project memory holds **how to challenge**, not what you found:
+which metrics best expose a weak sample, wording the planner could act
+on, mistakes that wasted a round. Never store figures, supplier names,
+risks, ratings or challenge outcomes. Read `MEMORY.md` at the start; save
+at the end only what a future run would otherwise rediscover; keep it
+under 150 lines.
+
+## Not this teammate's job
+
+- Rewriting the plan or the pack; you ask, the planner changes.
+- Re-rating risks; you flag ratings for the auditor.
+- Running the QA checks or judging the number and quote checks.
+
+
+---
+
+Create the qa-reviewer agent for the Phase 3 agent team in CLAUDE.md, and the scripts it runs in scripts/checks/:
+- check_quotes.py: runs the extract-rules verifier on rules.json against data/contract-rules.pdf, and checks every rule quote excerpt in risk-register.md matches rules.json.
+- check_numbers.py: every figure of three or more digits or with a £ sign in planning-memo.md, risk-control-matrix.md and audit-program.md is a value in analytics.json, pack-figures.json, rules.json or outputs/samples/*.csv. Row IDs, rule and test IDs, dates, years, clause and page references are skipped.
+- check_trace.py: every rule is cited by a rated risk, a control or a test, or listed as not tested with a reason; every approved in-scope risk has a control with a test and appears in the matrix and the program; every High risk is in scope or its exclusion is recorded with a reason; challenges.md exists, every row cites evidence, and none is open.
+- check_samples.py: every transaction in outputs/samples/*.csv and every row ID in audit-program.md exists in spend-clean.csv and at its sheet row in the council's workbook, with the same supplier and amount.
+- run_checks.py: runs all four and prints one table and a verdict.
+The agent waits for "PACK READY v1", runs the checks, sends "QA vN: FAIL <check>: <items>" to the planner for each failure, re-runs on every new version, and after the planner and the challenger report done writes outputs/review.md with the results as printed, the verdict READY FOR SIGN-OFF or BLOCKED, and an auditor sign-off block. It fixes nothing and softens nothing.
+
+Test each check on the current outputs and on a fixture with a planted bad figure and a planted missing row.
+
+---
+
+---
+name: qa-reviewer
+description: Agent-team member that checks the audit planning pack before sign-off. Runs scripts/checks/run_checks.py (quotes in the PDF, figures traced to the analytics, rule → risk → control → test complete, every sampled transaction present in the spend data) and writes outputs/review.md with the results, a verdict and the auditor's sign-off block. Blocks sign-off until every check passes. Spawned by the lead as a teammate at Phase 3.
+tools: Bash, Read, Write, Glob, Grep
+memory: project
+---
+
+You are the qa-reviewer on a three-member agent team (planner,
+challenger, qa-reviewer) that produces the audit planning pack (see
+CLAUDE.md, Phase 3). You decide nothing about the audit. You run the
+checks, report exactly what they report, and block sign-off until they
+all pass.
+
+## Files
+
+| | Path |
+| --- | --- |
+| You run | `scripts/checks/run_checks.py` (which runs `check_quotes.py`, `check_numbers.py`, `check_trace.py`, `check_samples.py`), with `.venv/bin/python` |
+| You write | `outputs/review.md` only |
+| You never write | the pack, the plan, the challenges, the register, the inputs, or the check scripts |
+
+## The checks
+
+| Check | Passes when |
+| --- | --- |
+| quotes | every `verbatim_quote` in `rules.json` is found in `data/contract-rules.pdf` on its stated page, and every quote excerpt in the register matches `rules.json` |
+| numbers | every figure of three or more digits, or with a £ sign, in the memo, the matrix and the program is a value in `analytics.json`, `pack-figures.json`, `rules.json` or the sample files |
+| trace | every rule is cited by a risk, a control or a test, or listed as not tested with a reason; every approved in-scope risk has a control and a test; every High risk is in scope or its exclusion is recorded with a reason; no challenge is left open |
+| samples | every transaction in `outputs/samples/` and in `audit-program.md` exists in `spend-clean.csv` and at its stated row in the council's workbook, with the same supplier and amount |
+
+The scripts are the check. Do not re-derive their results by reading the
+files yourself, and do not soften a failure: if a script says FAIL, the
+review says FAIL.
+
+## Working with the team
+
+1. Wait for the planner's `PACK READY v1`, then run
+   `.venv/bin/python scripts/checks/run_checks.py`.
+2. If anything fails, message the planner: `QA v1: FAIL <check>: <the
+   items, at most ten>` for each failing check, and wait for the next
+   PACK READY. If a failure is in an input the planner does not own (a
+   quote in `rules.json`, a row missing from the spend data), message
+   the lead instead: `QA BLOCKED ON INPUT: <what>`.
+3. Run the checks again on every PACK READY. Do not write the final
+   review until the challenger has sent `CHALLENGER DONE` and the planner
+   `PLANNER DONE`, because the trace check reads `challenges.md`.
+4. Write `outputs/review.md`: pack version checked, date, one table with
+   each check's result and its counts exactly as the script printed them,
+   the failures if any, the verdict `READY FOR SIGN-OFF` or `BLOCKED`,
+   and the sign-off block:
+
+   ```
+   ## Auditor sign-off
+
+   Signed off by:
+   Date:
+   Decision (sign off / return to the team):
+   Comment:
+   ```
+
+5. Tell the lead `QA DONE: READY FOR SIGN-OFF` or `QA DONE: BLOCKED`
+   with the failing checks in one line each. The lead relays it; you do
+   not report to the auditor directly.
+
+## Memory
+
+Persistent project memory holds **how to run the checks**: flags, a
+script quirk, an input that often needs rebuilding first. Never store
+check results, figures, supplier names or verdicts. Read `MEMORY.md` at
+the start; save at the end only what a future run would otherwise
+rediscover; keep it under 150 lines.
+
+## Not this teammate's job
+
+- Judging whether the plan is good; the challenger does that.
+- Fixing anything; you report, the planner fixes.
+- Signing off; the auditor signs, in `review.md`.
+
+
+---
+
+#!/usr/bin/env python3
+"""Run every QA check on the audit planning pack and print one table.
+
+Runs check_quotes.py, check_numbers.py, check_trace.py and check_samples.py
+with the same interpreter, prints each script's FAIL lines and SUMMARY line,
+then a table of check | result | summary. Exit 0 only when every check passes.
+"""
+import subprocess, sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+CHECKS = ["check_quotes.py", "check_numbers.py", "check_trace.py", "check_samples.py"]
+
+
+def main():
+    results = []
+    extra = sys.argv[1:2]  # optional outputs folder, passed to every check
+    for name in CHECKS:
+        p = subprocess.run([sys.executable, str(HERE / name), *extra], capture_output=True, text=True)
+        lines = p.stdout.strip().splitlines()
+        summary = next((l for l in lines if l.startswith("SUMMARY")), "(no summary)")
+        print(f"== {name}")
+        for l in lines:
+            if l.startswith("FAIL") or l.startswith("SUMMARY") or l.startswith("verify_quotes"):
+                print("   " + l)
+        if p.returncode != 0 and not lines:
+            print("   " + (p.stderr.strip().splitlines() or ["(no output)"])[-1])
+        results.append((name.replace("check_", "").replace(".py", ""), "PASS" if p.returncode == 0 else "FAIL", summary.replace("SUMMARY ", "")))
+    print("\n| Check | Result | Summary |\n|---|---|---|")
+    for name, res, summ in results:
+        print(f"| {name} | {res} | {summ} |")
+    ok = all(r == "PASS" for _, r, _ in results)
+    print(f"\nVERDICT: {'READY FOR SIGN-OFF' if ok else 'BLOCKED'} ({sum(1 for _, r, _ in results if r == 'PASS')}/{len(results)} checks pass)")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+---
+
+#!/usr/bin/env python3
+"""QA check: every quote exists in its source.
+
+1. Runs the extract-rules verifier: every verbatim_quote in outputs/rules.json
+   is found in data/contract-rules.pdf on its stated page.
+2. Every rule quote excerpt printed in outputs/risk-register.md
+   ("- [rule:CPR-xx] clause ... : "...") is the start of that rule's quote.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import json, re, subprocess, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+VERIFIER = ROOT / ".claude/skills/extract-rules/verify_quotes.py"
+RULES = ROOT / "outputs/rules.json"
+PDF = ROOT / "data/contract-rules.pdf"
+REGISTER = ROOT / "outputs/risk-register.md"
+
+
+def norm(s):
+    return re.sub(r"\s+", " ", s.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')).strip()
+
+
+def main():
+    fails = []
+    if not VERIFIER.exists():
+        fails.append(f"verifier missing: {VERIFIER}")
+    else:
+        p = subprocess.run([sys.executable, str(VERIFIER), str(RULES), str(PDF)], capture_output=True, text=True)
+        last = (p.stdout.strip().splitlines() or ["(no output)"])[-1]
+        print(f"verify_quotes.py: exit {p.returncode}: {last}")
+        if p.returncode != 0:
+            fails.append("verify_quotes.py reported failures: " + last)
+    rules = {r["rule_id"]: r for r in json.loads(RULES.read_text())["rules"]}
+    n_excerpts = 0
+    if REGISTER.exists():
+        for m in re.finditer(r'^- \[rule:(CPR-\d+)\] clause [^:]+: "(.*?)(…?)"\s*$', REGISTER.read_text(encoding="utf-8"), re.M):
+            rid, excerpt = m.group(1), m.group(2)
+            n_excerpts += 1
+            if rid not in rules:
+                fails.append(f"register cites unknown rule {rid}")
+            elif not norm(rules[rid]["verbatim_quote"]).startswith(norm(excerpt)):
+                fails.append(f"register excerpt for {rid} does not match rules.json")
+    print(f"register excerpts checked: {n_excerpts}")
+    for f in fails:
+        print("FAIL ", f)
+    print(f"SUMMARY quotes: rules={len(rules)} register_excerpts={n_excerpts} failures={len(fails)}")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+---
+
+#!/usr/bin/env python3
+"""QA check: every figure in the pack traces to a computed source.
+
+Scans outputs/planning-memo.md, risk-control-matrix.md and audit-program.md
+for figures (three or more digits, or a £ amount). Each must be a value in
+outputs/analytics.json, outputs/pack-figures.json, outputs/rules.json or one
+of outputs/samples/*.csv. Row IDs, rule/risk/test IDs, dates, years, clause
+and page references are not figures and are skipped.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import csv, json, re, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "outputs"  # an outputs folder to check; default outputs/
+DOCS = ["planning-memo.md", "risk-control-matrix.md", "audit-program.md"]
+SKIP = [
+    r"`[^`]*`",                      # code spans (row IDs, paths)
+    r"\b[A-Za-z0-9_\-]+\.xlsx:\d+",  # bare row IDs
+    r"\b(?:CPR|R|C|T)-\d+(?:\.\d+)?\b",
+    r"\b\d{4}-\d{2}-\d{2}\b",        # dates
+    r"\b(?:19|20)\d{2}\b",           # years
+    r"\bp\.\s?\d+\b",                # page refs
+    r"\bclause [\dA-Za-z. ]+",       # clause refs
+    r"\[metric:[^\]]+\]",
+]
+NUM = re.compile(r"£\s?(\d[\d,]*(?:\.\d+)?)|(?<![\w.])(\d[\d,]*\d)(?![\w.])")
+
+
+def walk(o, out):
+    if isinstance(o, dict):
+        for v in o.values(): walk(v, out)
+    elif isinstance(o, list):
+        for v in o: walk(v, out)
+    elif isinstance(o, (int, float)) and not isinstance(o, bool):
+        out.add(round(float(o), 2))
+    elif isinstance(o, str):
+        for m in re.finditer(r"\d[\d,]*(?:\.\d+)?", o):
+            try: out.add(round(float(m.group(0).replace(",", "")), 2))
+            except ValueError: pass
+
+
+def main():
+    allowed = set()
+    IN = ROOT / "outputs"  # analytics and rules always come from the project
+    for name in ("analytics.json", "pack-figures.json", "rules.json"):
+        p = (OUT if name == "pack-figures.json" else IN) / name
+        if p.exists(): walk(json.loads(p.read_text()), allowed)
+    for p in (OUT / "samples").glob("*.csv"):
+        with open(p, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                for v in row.values():
+                    try: allowed.add(round(float(v), 2))
+                    except (TypeError, ValueError): pass
+    fails, checked = [], 0
+    for name in DOCS:
+        p = OUT / name
+        if not p.exists():
+            fails.append(f"{name} missing"); continue
+        for ln, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+            text = line
+            for pat in SKIP:
+                text = re.sub(pat, " ", text)
+            for m in NUM.finditer(text):
+                raw = (m.group(1) or m.group(2)).replace(",", "")
+                if len(re.sub(r"\D", "", raw)) < 3 and not m.group(1):
+                    continue
+                checked += 1
+                try: val = round(float(raw), 2)
+                except ValueError: continue
+                if val not in allowed:
+                    fails.append(f"{name}:{ln}: figure {m.group(0).strip()} not found in analytics, pack figures, rules or samples")
+    for f in fails[:40]:
+        print("FAIL ", f)
+    if len(fails) > 40: print(f"FAIL  … and {len(fails) - 40} more")
+    print(f"SUMMARY numbers: figures_checked={checked} allowed_values={len(allowed)} failures={len(fails)}")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+---
+
+#!/usr/bin/env python3
+"""QA check: traceability of the pack.
+
+1. Every rule in outputs/rules.json is cited by a rated risk (risk-ratings.json),
+   a control or a test (audit-plan.json), or listed in rules_not_tested with a reason.
+2. Every approved, in-scope risk (auditor-comments.md + risk-register.md) is
+   planned with at least one control that has at least one test, and appears in
+   risk-control-matrix.md and audit-program.md; nothing unapproved is planned.
+3. Every risk whose matrix label is High or Extreme is in scope, or was rejected
+   with a comment, or is listed under "Not in scope" in the memo with a reason.
+4. outputs/challenges.md exists, every row cites evidence, and no row is open.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import json, re, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "outputs"  # an outputs folder to check; default outputs/
+CITE = re.compile(r"\[(rule|metric|history):((?:[^\[\]]|\[\d+\])+)\]")
+HIGH = {"high", "extreme", "very high"}
+EVIDENCE = re.compile(r"CPR-\d+|\$\.[\w.\[\]]+|\b(?:AUD|RT|D|T|C)-\d+|scoring_method")
+
+
+def table_rows(text, first_col=r"R-\d+"):
+    rows = []
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if cells and re.fullmatch(first_col, cells[0]):
+            rows.append(cells)
+    return rows
+
+
+def main():
+    fails = []
+    IN = ROOT / "outputs"  # the register, decisions and inputs always come from the project
+    rules = [r["rule_id"] for r in json.loads((IN / "rules.json").read_text())["rules"]]
+    ratings = json.loads((IN / "risk-ratings.json").read_text())
+    plan = json.loads((OUT / "audit-plan.json").read_text()) if (OUT / "audit-plan.json").exists() else {}
+    register = (IN / "risk-register.md").read_text(encoding="utf-8") if (IN / "risk-register.md").exists() else ""
+    comments = (IN / "auditor-comments.md").read_text(encoding="utf-8") if (IN / "auditor-comments.md").exists() else ""
+    memo = (OUT / "planning-memo.md").read_text(encoding="utf-8") if (OUT / "planning-memo.md").exists() else ""
+    matrix = (OUT / "risk-control-matrix.md").read_text(encoding="utf-8") if (OUT / "risk-control-matrix.md").exists() else ""
+    program = (OUT / "audit-program.md").read_text(encoding="utf-8") if (OUT / "audit-program.md").exists() else ""
+    if not plan: fails.append("audit-plan.json missing")
+
+    # 1. rules
+    cited = set()
+    for r in ratings.get("risks", []):
+        cited |= {ref for kind, ref in CITE.findall(json.dumps(r)) if kind == "rule"}
+    for r in plan.get("risks", []):
+        for c in r.get("controls") or []:
+            cited |= {x.split(":", 1)[1] for x in c.get("cites") or [] if x.startswith("rule:")}
+        for t in r.get("tests") or []:
+            cited |= {x.split(":", 1)[1] for x in t.get("cites") or [] if x.startswith("rule:")}
+    not_tested = {}
+    for g in plan.get("rules_not_tested") or []:
+        for x in g.get("rule_ids") or []:
+            not_tested[x] = (g.get("reason") or "").strip()
+    missing = [x for x in rules if x not in cited and not not_tested.get(x)]
+    if missing:
+        fails.append(f"rules with no risk, control, test or reason: {', '.join(missing)}")
+
+    # 2. scope and structure
+    summary = {c[0]: {"label": c[5], "band": c[6], "scope": c[8]} for c in table_rows(register) if len(c) >= 9}
+    decisions = {c[0]: {"decision": c[4].lower(), "comment": c[5] if len(c) > 5 else ""} for c in table_rows(comments) if len(c) >= 5}
+    rat = {r["id"]: r for r in ratings.get("risks", [])}
+    approved = [rid for rid in summary if decisions.get(rid, {}).get("decision") in ("approve", "amend") and rat.get(rid, {}).get("recommend_in_scope", True)]
+    undecided = [rid for rid in summary if not decisions.get(rid, {}).get("decision")]
+    if undecided: fails.append(f"gate not closed: undecided {', '.join(undecided)}")
+    planned = {r["id"]: r for r in plan.get("risks", [])}
+    for rid in approved:
+        r = planned.get(rid)
+        if not r:
+            fails.append(f"{rid}: approved and in scope but not planned"); continue
+        controls = r.get("controls") or []
+        tests = r.get("tests") or []
+        if not controls: fails.append(f"{rid}: no control")
+        for c in controls:
+            if not any(t.get("control") == c.get("id") for t in tests):
+                fails.append(f"{rid}.{c.get('id')}: control without a test")
+        if not re.search(rf"^\| {rid}: ", matrix, re.M): fails.append(f"{rid}: not in risk-control-matrix.md")
+        if not re.search(rf"^## {rid}: ", program, re.M): fails.append(f"{rid}: not in audit-program.md")
+    for rid in planned:
+        if rid not in approved: fails.append(f"{rid}: planned but not an approved, in-scope risk")
+
+    # 3. high risks
+    not_in_scope_section = memo.split("**Not in scope**", 1)[1].split("\n## ", 1)[0] if "**Not in scope**" in memo else ""
+    for rid, v in summary.items():
+        if v["label"].lower() in HIGH and rid not in approved:
+            d = decisions.get(rid, {})
+            if d.get("decision") == "reject" and d.get("comment"): continue
+            if re.search(rf"^- {rid}: .+: .+", not_in_scope_section, re.M): continue
+            fails.append(f"{rid}: {v['label']} risk not in scope and no recorded reason")
+    for rid, v in decisions.items():
+        if v["decision"] == "reject" and rid not in summary and v.get("comment") == "" and not re.search(rf"^- {rid}: ", not_in_scope_section, re.M):
+            fails.append(f"{rid}: rejected without a reason")
+
+    # 4. challenges
+    ch_path = OUT / "challenges.md"
+    n_ch, open_rows = 0, []
+    if not ch_path.exists():
+        fails.append("challenges.md missing")
+    else:
+        for cells in table_rows(ch_path.read_text(encoding="utf-8"), r"\d+"):
+            if len(cells) < 8: continue
+            n_ch += 1
+            if not EVIDENCE.search(cells[4]): fails.append(f"challenge #{cells[0]}: no citation in Evidence")
+            if cells[7].strip().lower() == "open" or not cells[7].strip(): open_rows.append(cells[0])
+        if open_rows: fails.append(f"challenges still open: #{', #'.join(open_rows)}")
+        if n_ch == 0: fails.append("challenges.md has no challenge rows")
+
+    for f in fails: print("FAIL ", f)
+    print(f"SUMMARY trace: rules={len(rules)} rules_cited={len([x for x in rules if x in cited])} rules_not_tested={len([x for x in rules if x not in cited and not_tested.get(x)])} "
+          f"approved_in_scope={len(approved)} planned={len(planned)} high_risks={len([1 for v in summary.values() if v['label'].lower() in HIGH])} challenges={n_ch} open={len(open_rows)} failures={len(fails)}")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+---
+
+#!/usr/bin/env python3
+"""QA check: every sampled transaction exists in the spend data.
+
+For every row in outputs/samples/T-*.csv, and every row ID printed in the
+sample tables of outputs/audit-program.md:
+1. the row_id is in outputs/analytics-full/spend-clean.csv with the same
+   supplier and amount;
+2. the council's workbook data/spend/<source_file>, sheet "Data to publish",
+   has that supplier and amount at the stated sheet row.
+Prints PASS/FAIL lines and a summary; exit 0 when clean.
+"""
+import csv, re, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "outputs"  # an outputs folder to check; default outputs/
+SPEND = ROOT / "data/spend"
+FULL = ROOT / "outputs/analytics-full"  # the cleaned spend always comes from the project
+
+
+def money(v):
+    try: return round(float(str(v).replace(",", "").replace("£", "")), 2)
+    except (TypeError, ValueError): return None
+
+
+def load_workbook_rows(name, cache):
+    """{sheet_row: {column: value}} for the workbook's data sheet, header found by name."""
+    if name in cache: return cache[name]
+    import openpyxl
+    path = SPEND / name
+    if not path.exists():
+        cache[name] = None; return None
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    ws = wb["Data to publish"] if "Data to publish" in wb.sheetnames else wb[wb.sheetnames[0]]
+    rows, header = {}, None
+    for i, row in enumerate(ws.iter_rows(values_only=True), 1):
+        vals = ["" if v is None else str(v).strip() for v in row]
+        if header is None:
+            if "Supplier name" in vals and "Net amount" in vals:
+                header = vals
+            continue
+        rows[i] = dict(zip(header, vals))
+    wb.close()
+    cache[name] = rows
+    return rows
+
+
+def main():
+    fails, checked = [], 0
+    spend = {}
+    with open(FULL / "spend-clean.csv", newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            spend[r["row_id"]] = r
+    items = []
+    for p in sorted((OUT / "samples").glob("T-*.csv")):
+        with open(p, newline="", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                items.append((p.name, r["row_id"], r.get("supplier", ""), r.get("amount", "")))
+    sampled_ids = {i[1] for i in items}
+    program = (OUT / "audit-program.md").read_text(encoding="utf-8") if (OUT / "audit-program.md").exists() else ""
+    program_ids = set(re.findall(r"`([^`]+\.xlsx:\d+)`", program))
+    for rid in sorted(program_ids - sampled_ids):
+        fails.append(f"audit-program.md lists {rid} but no sample file holds it")
+    cache = {}
+    for where, rid, sup, amt in items:
+        checked += 1
+        s = spend.get(rid)
+        if not s:
+            fails.append(f"{where}: {rid} not in spend-clean.csv"); continue
+        if s.get("Supplier name", "").strip() != sup.strip() or money(s.get("Net amount")) != money(amt):
+            fails.append(f"{where}: {rid} supplier/amount differ from spend-clean.csv")
+        src, _, row = rid.rpartition(":")
+        rows = load_workbook_rows(src, cache)
+        if rows is None:
+            fails.append(f"{where}: workbook {src} not found"); continue
+        wrow = rows.get(int(row))
+        if not wrow:
+            fails.append(f"{where}: {rid}: row {row} not in workbook"); continue
+        if wrow.get("Supplier name", "").strip() != sup.strip() or money(wrow.get("Net amount")) != money(amt):
+            fails.append(f"{where}: {rid}: workbook row {row} has a different supplier or amount")
+    for f in fails[:40]: print("FAIL ", f)
+    if len(fails) > 40: print(f"FAIL  … and {len(fails) - 40} more")
+    print(f"SUMMARY samples: transactions_checked={checked} in_program={len(program_ids)} workbooks={len([k for k, v in cache.items() if v])} failures={len(fails)}")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+---
+
+Run the agent team for the audit planning pack, following the lead procedure in CLAUDE.md: check the gate, spawn planner, challenger and qa-reviewer as teammates from their files in .claude/agents, let them work through the challenge rounds and the QA checks, shut them down when all three report done, and report for sign-off.
+
+---
+
+Show me outputs/review.md and the points marked for the auditor at the end of outputs/challenges.md. If the verdict is READY FOR SIGN-OFF, record my sign-off in review.md: name <your name>, today's date, decision sign off.

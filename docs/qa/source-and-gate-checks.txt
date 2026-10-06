@@ -1,0 +1,37 @@
+$ python .claude/skills/extract-rules/verify_quotes.py outputs/rules.json data/contract-rules.pdf
+exit=0
+PDF: 15 pages, 34282 normalised chars
+rules.json: 80 rules, 81 excluded, 4 parameters
+
+ALL CHECKS PASSED (80 rules, 81 excluded, 0 warning(s))
+
+
+$ python scripts/verify_history.py outputs/history.json data/committee
+exit=0
+history.json: 106 sourced items, 81 quotes, 4 documents
+
+ALL CHECKS PASSED
+
+
+$ python scripts/selfcheck.py
+exit=0
+PASS threshold_clustering: 1 source rows independently reconciled; first row Over500_2026_P02_-_published.xlsx:34
+PASS split_purchases: 44 source rows independently reconciled; first row Over500_2026_P04_-_published.xlsx:1237
+PASS high_value_suppliers: 126 source rows independently reconciled; first row Over500_2026_P02_-_published.xlsx:691
+PASS duplicates: 36 source rows independently reconciled; first row Over500_2026_P03_-_published.xlsx:2164
+PASS off_contract: 126 source rows independently reconciled; first row Over500_2026_P02_-_published.xlsx:691
+PASS expired_notice_spend: 1 source rows independently reconciled; first row Over500_2026_P03_-_published.xlsx:704
+PASS spend_vs_award: 10 source rows independently reconciled; first row Over500_2026_P04_-_published.xlsx:427
+
+
+$ python .claude/skills/risk-assessment/build_register.py
+exit=0
+SUMMARY risks kept: 8, excluded by validation: 0, failures=0, warnings=0, gate=open
+
+
+$ python .claude/skills/audit-program/build_pack.py --gate
+exit=1
+FAIL  gate: human reviewer and ISO date required
+FAIL  gate not closed: no decision for R-01, R-02, R-03, R-04, R-05, R-06, R-07, R-08 in auditor-comments.md
+FAIL  gate: the register is not a revision; re-run the risk-assessor so the decisions are applied
+FAIL  gate: human decisions are incomplete or the revision was not validated

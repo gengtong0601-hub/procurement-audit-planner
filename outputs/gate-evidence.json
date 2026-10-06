@@ -1,0 +1,13 @@
+{
+  "ready": false,
+  "revision": null,
+  "sha256": {
+    "/Users/leyanyu/Documents/ChatGPT/440-2 HW2/outputs/risk-ratings.json": "aa40056731d3f85a293318fb266c05671a67fe82613e283b1ab1787be8bfa8ee",
+    "/Users/leyanyu/Documents/ChatGPT/440-2 HW2/outputs/risk-register.md": "41b1e620ca2bae48e23eb8da03d874bef8434c4bc1e848acea55b0506a580273",
+    "/Users/leyanyu/Documents/ChatGPT/440-2 HW2/outputs/auditor-comments.md": "c9474fd73569a4eca0b9ad6a6794b918c0a0919960facd56ad3ba55af4041aeb",
+    "/Users/leyanyu/Documents/ChatGPT/440-2 HW2/outputs/rules.json": "3b3614cef0d6fabf7a99c25d00556f423c1148963e5367736073900e004626f5",
+    "/Users/leyanyu/Documents/ChatGPT/440-2 HW2/outputs/analytics.json": "569b2b619ba5d315c3cfa001ca1eea626a0ba1e82173ee525dc7bcab4d528d6d",
+    "/Users/leyanyu/Documents/ChatGPT/440-2 HW2/outputs/history.json": "077b6e2a15f5e4b2c7ea6e743175927ab93dacf3d8fba1ed3a678b078c09190d"
+  },
+  "reason": "Risk validation or human decisions incomplete"
+}

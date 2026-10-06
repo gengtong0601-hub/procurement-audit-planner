@@ -1,0 +1,50 @@
+{
+  "source": "https://procurement-audit-planner.vercel.app/data.zip",
+  "files": [
+    {
+      "path": "data/committee/audit-completed-work-2024-25-annual.pdf",
+      "bytes": 116243,
+      "sha256": "1e86e2d613889a7048f8b0478ddc835f784ad139488112061d5cc64114007247"
+    },
+    {
+      "path": "data/committee/audit-completed-work-2025-26-q3.pdf",
+      "bytes": 107356,
+      "sha256": "6681b9a0f93771b0ba7660bdab33bcc605c7f32a06f132f37aa0f4465b48856c"
+    },
+    {
+      "path": "data/committee/internal-audit-plan-2025-28.pdf",
+      "bytes": 240845,
+      "sha256": "7e36b4a7aac008018f05eb4d360c02dbe2685e499f75852c2fd6601cb5f28f8c"
+    },
+    {
+      "path": "data/committee/risk-management-strategy-2024-27.pdf",
+      "bytes": 648688,
+      "sha256": "a5a881e486a63c5fb848d4d3e7adef2723c07b830a617f423b7d80e8764d72a7"
+    },
+    {
+      "path": "data/contract-rules.pdf",
+      "bytes": 859467,
+      "sha256": "0e87492f6701b946fc7777e2f5e265b902036c0d08978e19a30f01e111a6b276"
+    },
+    {
+      "path": "data/contracts.csv",
+      "bytes": 175747,
+      "sha256": "9d0a53c092a5274f44490b428f9ff400ac8cb889df962165720f8a1d0ed42648"
+    },
+    {
+      "path": "data/spend/Over500_2026_P02_-_published.xlsx",
+      "bytes": 122617,
+      "sha256": "f611346f258825b84924310c2d42edce4a4aec3d3832054b340f4ac2125301a6"
+    },
+    {
+      "path": "data/spend/Over500_2026_P03_-_published.xlsx",
+      "bytes": 150867,
+      "sha256": "b7359a8e5cb9ea55bf3d47112f185167038b5ee64af8db9be02a7f5ea869ec76"
+    },
+    {
+      "path": "data/spend/Over500_2026_P04_-_published.xlsx",
+      "bytes": 172572,
+      "sha256": "e465900d00a8e20ac767d6218827a48c01ab6ad911e5051a34c18979b7da0612"
+    }
+  ]
+}

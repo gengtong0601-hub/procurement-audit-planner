@@ -1,0 +1,126 @@
+{
+  "files": [
+    {
+      "file": "Over500_2026_P02_-_published.xlsx",
+      "sha256": "f611346f258825b84924310c2d42edce4a4aec3d3832054b340f4ac2125301a6",
+      "sheet": "Data to publish",
+      "header_row": 1,
+      "rows": 2892,
+      "blank_expenditure_category": 28
+    },
+    {
+      "file": "Over500_2026_P03_-_published.xlsx",
+      "sha256": "b7359a8e5cb9ea55bf3d47112f185167038b5ee64af8db9be02a7f5ea869ec76",
+      "sheet": "Data to publish",
+      "header_row": 2,
+      "rows": 3547,
+      "blank_expenditure_category": 29
+    },
+    {
+      "file": "Over500_2026_P04_-_published.xlsx",
+      "sha256": "e465900d00a8e20ac767d6218827a48c01ab6ad911e5051a34c18979b7da0612",
+      "sheet": "Data to publish",
+      "header_row": 2,
+      "rows": 4168,
+      "blank_expenditure_category": 30
+    }
+  ],
+  "rows_raw": 10607,
+  "rows_after_exclusions": 8534,
+  "raw_total_pence": 8042725426,
+  "total_pence": 6677810478,
+  "date_min": "2026-05-01",
+  "date_max": "2026-07-31",
+  "months_covered": 3,
+  "months": [
+    "2026-05",
+    "2026-06",
+    "2026-07"
+  ],
+  "excluded": {
+    "redacted_supplier": {
+      "rows": 2015,
+      "amount_pence": 274674671,
+      "gbp": 2746746.71,
+      "reason": "Redacted combines unrelated payees; excluded from supplier-level tests."
+    },
+    "pension_statutory": {
+      "rows": 12,
+      "amount_pence": 923581493,
+      "gbp": 9235814.93,
+      "reason": "Narrative matches LGPS|PENSION|SUPERANNUATION; statutory pension indicator."
+    },
+    "inter_authority": {
+      "rows": 46,
+      "amount_pence": 166658784,
+      "gbp": 1666587.84,
+      "reason": "Public-body supplier or JOINT ARRANGEMENTS, except Private Contractors narrative."
+    }
+  },
+  "tag_rules": {
+    "care_or_education_placement": "Service ^(Adult Social Care|Children's Social Care|Education); Narrative ^(Private Contractors|Other agencies|Voluntary Associations)$",
+    "grant": "Narrative GRANT",
+    "agency_staff": "Narrative AGENCY",
+    "premises_non_procurement": "Narrative RENT|RATES|WATER RATES|LEASE",
+    "general_procurement": "otherwise; first match wins"
+  },
+  "exclusion_regexes": {
+    "pension": "LGPS|PENSION|SUPERANNUATION",
+    "inter_authority": "\\b(COUNCIL|BOROUGH|COUNTY|CNCL|NHS|POLICE|FIRE AUTHORITY|FIRE AND RESCUE|HMRC|HM REVENUE|DEPARTMENT FOR|MINISTRY OF)\\b"
+  },
+  "warnings": [],
+  "provenance": "Prepared by Codex; Claude Code agent execution and human approval pending.",
+  "contracts": {
+    "contracts_present": true,
+    "register_present": false,
+    "rows_in_file": 150,
+    "rows_for_council": 141,
+    "notice_supplier_pairs": 210,
+    "distinct_suppliers": 143,
+    "active_in_window": 62,
+    "ended_before_window": 79,
+    "zero_value_awards": 7,
+    "rows_per_year": {
+      "2021": 7,
+      "2022": 10,
+      "2023": 39,
+      "2024": 52,
+      "2025": 28,
+      "2026": 5
+    },
+    "published_range": [
+      "2021-02-23",
+      "2026-09-09"
+    ],
+    "warnings": [
+      "Some end-date-active notices start after the spend window. Listed for traceability; these future notices are excluded from matching and spend-vs-award."
+    ],
+    "caveat": "contracts.csv holds published *notices*, not a contract register. It holds awards published on Contracts Finder in roughly the last five years. A contract awarded earlier (e.g. long-running waste or highways contracts), one advertised only on Find a Tender, a framework call-off recorded under another buyer, or an exempt placement will have no notice here. \"No notice found\" is therefore an indicator to check against the council's contract register, never evidence of off-contract spend.",
+    "rows_dropped_other_buyers": 9,
+    "dropped_buyers": {
+      "Westworks Procurement Ltd": 1,
+      "SOUTHAMPTON CITY COUNCIL": 1,
+      "CITY OF BRADFORD METROPOLITAN DISTRICT COUNCIL": 1,
+      "Ministry of Defence": 5,
+      "Health Education England": 1
+    },
+    "organisations_kept": [
+      "WEST BERKSHIRE COUNCIL",
+      "West Berkshire",
+      "West Berkshire Council"
+    ],
+    "normalised_buyer_variants_kept": 6,
+    "buyer_matching": {
+      "allowed_identities": [
+        "West Berkshire",
+        "West Berkshire Council"
+      ],
+      "normalisation": "strip and collapse whitespace, then casefold",
+      "comparison": "exact identity only; no substring or fuzzy matching",
+      "guide_interpretation": "Case and whitespace are spelling variants of the two named council identities. This includes the uppercase spelling shown in the guide Setup replay."
+    },
+    "active_definition": "End date on/after spend window start, or blank end date (guide's notice-coverage proxy).",
+    "starts_after_window": 1,
+    "register_rows": 0
+  }
+}

@@ -1,0 +1,5 @@
+[
+  "Show me outputs/auditor-comments.md next to the summary table of outputs/risk-register.md. Confirm there is one row for every risk in the register, and tell me how many decisions are still blank.",
+  "Record my decisions in outputs/auditor-comments.md. Reviewer: <your name>. Date: today.\n- R-01: approve.\n- R-09: amend. Raise likelihood to 3: awards above \u00a3500,000 are rare but carry the highest stakes.\n- R-10: reject. Grants will be covered by a separate review.\nLeave every other risk blank for now.",
+  "Run the risk-assessor again. Apply the decisions in outputs/auditor-comments.md and mark the register as a revision."
+]

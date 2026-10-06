@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: procurement-audit-studio
+    runtime: docker
+    plan: free
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: PYTHONUNBUFFERED
+        value: "1"
