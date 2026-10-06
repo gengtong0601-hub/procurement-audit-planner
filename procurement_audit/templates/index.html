@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Procurement Audit Planner</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/"
+        ><span class="brand-icon">P</span
+        ><span>Procurement<br /><strong>Audit Planner</strong></span></a
+      >
+      <p class="eyebrow">PLANNING WORKSPACE</p>
+      <nav aria-label="Planning stages">
+        <button data-view="overview" class="nav-item active">
+          <span>01</span> Sources & rules
+        </button>
+        <button data-view="risks" class="nav-item">
+          <span>02</span> Risk register
+        </button>
+        <button data-view="pack" class="nav-item">
+          <span>03</span> Planning pack
+        </button>
+        <button data-view="team" class="nav-item">
+          <span>04</span> Team & assurance
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <span class="small-label">THE WORKFLOW</span>
+        <p>Evidence first.<br />Human judgment at every gate.</p>
+        <div class="tag">PYTHON · SKILLS + AGENTS</div>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div class="breadcrumb">
+          Workspace <span>/</span> Procurement planning
+        </div>
+        <span class="local-badge">Local workspace</span>
+      </header>
+      <div id="alert" role="alert" hidden></div>
+      <section class="heading">
+        <div>
+          <p class="eyebrow">FROM PUBLIC DATA TO FOCUSED FIELDWORK</p>
+          <h1 id="page-title">Plan with evidence.</h1>
+          <p id="page-description">
+            Read the rules. Follow the money. Keep the auditor in control.
+          </p>
+        </div>
+        <div class="header-actions">
+          <select id="case-select" aria-label="Select an existing case">
+            <option value="">Select a case</option></select
+          ><button id="demo-button" class="primary">
+            ＋ New demonstration
+          </button>
+        </div>
+      </section>
+      <div id="case-banner" hidden></div>
+      <section id="empty-state" class="welcome card">
+        <div>
+          <span class="tag teal">A TRACEABLE AUDIT WORKFLOW</span>
+          <h2>Every risk has a source.<br />Every test has a purpose.</h2>
+          <p>
+            Turn procurement rules, payment records and audit history into a
+            reviewed fieldwork plan. Start with a synthetic case to explore all
+            five stages.
+          </p>
+          <button id="welcome-demo" class="primary">
+            Explore the demonstration <span>→</span>
+          </button>
+          <p class="small">
+            No API key required. No real council data is included.
+          </p>
+        </div>
+        <div class="flow">
+          <div>
+            <b>01</b
+            ><span>Extract rules<small>Verified PDF quotations</small></span>
+          </div>
+          <div>
+            <b>02</b
+            ><span
+              >Analyse the full population<small
+                >Spend + history + evidence</small
+              ></span
+            >
+          </div>
+          <div class="gate">
+            <b>03</b
+            ><span
+              >Auditor risk decisions<small
+                >Approve · amend · reject</small
+              ></span
+            >
+          </div>
+          <div>
+            <b>04</b
+            ><span
+              >Build & challenge the pack<small
+                >Planner + challenger + QA</small
+              ></span
+            >
+          </div>
+          <div class="gate">
+            <b>05</b
+            ><span
+              >Auditor sign-off<small>A deliberate final decision</small></span
+            >
+          </div>
+        </div>
+      </section>
+      <div id="workspace" hidden>
+        <section
+          id="stats"
+          class="stats"
+          aria-label="Population summary"
+        ></section>
+        <section id="overview" class="view"></section>
+        <section id="risks" class="view" hidden></section>
+        <section id="pack" class="view" hidden></section>
+        <section id="team" class="view" hidden></section>
+      </div>
+      <footer>
+        Planning indicators, not audit findings. Source documents and human
+        judgment remain essential.
+      </footer>
+    </main>
+    <dialog id="document-dialog">
+      <div class="dialog-top">
+        <h2 id="document-title"></h2>
+        <button id="close-dialog" aria-label="Close document">✕</button>
+      </div>
+      <pre id="document-content"></pre>
+    </dialog>
+  </body>
+</html>

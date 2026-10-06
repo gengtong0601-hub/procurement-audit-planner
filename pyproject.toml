@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "procurement-audit-planner"
+version = "0.1.0"
+description = "A Python procurement audit workflow built from reusable skills and specialized agents."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "jinja2>=3.1.6,<4",
+  "pydantic>=2.10,<3",
+  "uvicorn>=0.34,<1",
+  "pypdf>=5.4,<7",
+  "openpyxl>=3.1.5,<4",
+  "reportlab>=4.3,<5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<9", "ruff>=0.11,<1"]
+
+[project.scripts]
+procurement-audit = "procurement_audit.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["procurement_audit"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "procurement_audit/resources/skills"
+"examples" = "procurement_audit/resources/examples"
+".claude/agents" = "procurement_audit/resources/agent-definitions"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
